@@ -1,0 +1,156 @@
+<h1>
+  Move #<%= @the_move.id %> details
+</h1>
+
+<article>
+  <div>
+    <a href="/moves">
+      Go back
+    </a>
+  </div>
+
+  <div>
+    <a href="/delete_move/<%= @the_move.id %>">
+      Delete move
+    </a>
+  </div>
+  <dl>
+    <dt>
+      Game
+    </dt>
+    <dd>
+      <%= @the_move.game_id %>
+    </dd>
+
+    <dt>
+      User
+    </dt>
+    <dd>
+      <%= @the_move.user_id %>
+    </dd>
+
+    <dt>
+      Move number
+    </dt>
+    <dd>
+      <%= @the_move.move_number %>
+    </dd>
+
+    <dt>
+      Card player
+    </dt>
+    <dd>
+      <%= @the_move.card_player %>
+    </dd>
+
+    <dt>
+      Captured cards
+    </dt>
+    <dd>
+      <%= @the_move.captured_cards %>
+    </dd>
+
+    <dt>
+      Basra
+    </dt>
+    <dd>
+      <%= @the_move.basra %>
+    </dd>
+
+    <dt>
+      Points earned
+    </dt>
+    <dd>
+      <%= @the_move.points_earned %>
+    </dd>
+
+    <dt>
+      Created at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_move.created_at) %> ago
+    </dd>
+
+    <dt>
+      Updated at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_move.updated_at) %> ago
+    </dd>
+  </dl>
+</article>
+
+<hr>
+
+
+<article>
+  <header>
+    <h2>
+      Edit move
+    </h2>
+  </header>
+
+  <form action="/modify_move/<%= @the_move.id %>"  method="post" >
+    <div>
+      <label for="game_id_box">
+        Game
+      </label>
+
+      <input type="text" id="game_id_box" name="query_game_id" value="<%= @the_move.game_id %>">
+    </div>
+
+    <div>
+      <label for="user_id_box">
+        User
+      </label>
+
+      <input type="text" id="user_id_box" name="query_user_id" value="<%= @the_move.user_id %>">
+    </div>
+
+    <div>
+      <label for="move_number_box">
+        Move number
+      </label>
+
+      <input type="text" id="move_number_box" name="query_move_number" value="<%= @the_move.move_number %>">
+    </div>
+
+    <div>
+      <label for="card_player_box">
+        Card player
+      </label>
+
+      <input type="text" id="card_player_box" name="query_card_player" value="<%= @the_move.card_player %>">
+    </div>
+
+    <div>
+      <label for="captured_cards_box">
+        Captured cards
+      </label>
+
+      <input type="text" id="captured_cards_box" name="query_captured_cards" value="<%= @the_move.captured_cards %>">
+    </div>
+
+    <div>
+      <label for="basra_box">
+        Basra
+      </label>
+
+      <input type="text" id="basra_box" name="query_basra" value="<%= @the_move.basra %>">
+    </div>
+
+    <div>
+      <label for="points_earned_box">
+        Points earned
+      </label>
+
+      <input type="text" id="points_earned_box" name="query_points_earned" value="<%= @the_move.points_earned %>">
+    </div>
+
+    <button type="submit">
+      Update move
+    </button>
+  </form>
+</article>
+
+<hr>

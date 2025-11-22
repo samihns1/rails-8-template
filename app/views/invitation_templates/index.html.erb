@@ -1,0 +1,75 @@
+<h1>
+  List of all invitations
+</h1>
+
+<hr>
+
+<article>
+  <header>
+    <h2>
+      Add a new invitation
+    </h2>
+  </header>
+
+  <form action="/insert_invitation" method="post">
+    <div>
+      <label for="sender_id_box">
+        Sender
+      </label>
+
+      <input type="text" id="sender_id_box" name="query_sender_id">
+    </div>
+
+    <div>
+      <label for="reciptent_email_box">
+        Reciptent email
+      </label>
+
+      <input type="text" id="reciptent_email_box" name="query_reciptent_email">
+    </div>
+
+    <div>
+      <label for="game_id_box">
+        Game
+      </label>
+
+      <input type="text" id="game_id_box" name="query_game_id">
+    </div>
+
+    <div>
+      <label for="token_box">
+        Token
+      </label>
+
+      <input type="text" id="token_box" name="query_token">
+    </div>
+
+    <div>
+      <label for="status_box">
+        Status
+      </label>
+
+      <input type="text" id="status_box" name="query_status">
+    </div>
+
+    <button type="submit">
+      Create invitation
+    </button>
+  </form>
+</article>
+
+<hr>
+
+<article>
+  <ul>
+    <% @list_of_invitations.each do |an_invitation| %>
+      <li>
+        <a href="/invitations/<%= an_invitation.id %>">
+          Invitation #<%= an_invitation.id %>
+        </a>
+      </li>
+    <% end %>
+  </ul>
+</article>
+
+<hr>

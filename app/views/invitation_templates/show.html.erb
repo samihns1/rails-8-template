@@ -1,0 +1,126 @@
+<h1>
+  Invitation #<%= @the_invitation.id %> details
+</h1>
+
+<article>
+  <div>
+    <a href="/invitations">
+      Go back
+    </a>
+  </div>
+
+  <div>
+    <a href="/delete_invitation/<%= @the_invitation.id %>">
+      Delete invitation
+    </a>
+  </div>
+  <dl>
+    <dt>
+      Sender
+    </dt>
+    <dd>
+      <%= @the_invitation.sender_id %>
+    </dd>
+
+    <dt>
+      Reciptent email
+    </dt>
+    <dd>
+      <%= @the_invitation.reciptent_email %>
+    </dd>
+
+    <dt>
+      Game
+    </dt>
+    <dd>
+      <%= @the_invitation.game_id %>
+    </dd>
+
+    <dt>
+      Token
+    </dt>
+    <dd>
+      <%= @the_invitation.token %>
+    </dd>
+
+    <dt>
+      Status
+    </dt>
+    <dd>
+      <%= @the_invitation.status %>
+    </dd>
+
+    <dt>
+      Created at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_invitation.created_at) %> ago
+    </dd>
+
+    <dt>
+      Updated at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_invitation.updated_at) %> ago
+    </dd>
+  </dl>
+</article>
+
+<hr>
+
+
+<article>
+  <header>
+    <h2>
+      Edit invitation
+    </h2>
+  </header>
+
+  <form action="/modify_invitation/<%= @the_invitation.id %>"  method="post" >
+    <div>
+      <label for="sender_id_box">
+        Sender
+      </label>
+
+      <input type="text" id="sender_id_box" name="query_sender_id" value="<%= @the_invitation.sender_id %>">
+    </div>
+
+    <div>
+      <label for="reciptent_email_box">
+        Reciptent email
+      </label>
+
+      <input type="text" id="reciptent_email_box" name="query_reciptent_email" value="<%= @the_invitation.reciptent_email %>">
+    </div>
+
+    <div>
+      <label for="game_id_box">
+        Game
+      </label>
+
+      <input type="text" id="game_id_box" name="query_game_id" value="<%= @the_invitation.game_id %>">
+    </div>
+
+    <div>
+      <label for="token_box">
+        Token
+      </label>
+
+      <input type="text" id="token_box" name="query_token" value="<%= @the_invitation.token %>">
+    </div>
+
+    <div>
+      <label for="status_box">
+        Status
+      </label>
+
+      <input type="text" id="status_box" name="query_status" value="<%= @the_invitation.status %>">
+    </div>
+
+    <button type="submit">
+      Update invitation
+    </button>
+  </form>
+</article>
+
+<hr>

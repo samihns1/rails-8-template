@@ -1,0 +1,126 @@
+<h1>
+  Gameplayer #<%= @the_gameplayer.id %> details
+</h1>
+
+<article>
+  <div>
+    <a href="/gameplayers">
+      Go back
+    </a>
+  </div>
+
+  <div>
+    <a href="/delete_gameplayer/<%= @the_gameplayer.id %>">
+      Delete gameplayer
+    </a>
+  </div>
+  <dl>
+    <dt>
+      User
+    </dt>
+    <dd>
+      <%= @the_gameplayer.user_id %>
+    </dd>
+
+    <dt>
+      Game
+    </dt>
+    <dd>
+      <%= @the_gameplayer.game_id %>
+    </dd>
+
+    <dt>
+      Seat number
+    </dt>
+    <dd>
+      <%= @the_gameplayer.seat_number %>
+    </dd>
+
+    <dt>
+      Score
+    </dt>
+    <dd>
+      <%= @the_gameplayer.score %>
+    </dd>
+
+    <dt>
+      Hand cards
+    </dt>
+    <dd>
+      <%= @the_gameplayer.hand_cards %>
+    </dd>
+
+    <dt>
+      Created at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_gameplayer.created_at) %> ago
+    </dd>
+
+    <dt>
+      Updated at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_gameplayer.updated_at) %> ago
+    </dd>
+  </dl>
+</article>
+
+<hr>
+
+
+<article>
+  <header>
+    <h2>
+      Edit gameplayer
+    </h2>
+  </header>
+
+  <form action="/modify_gameplayer/<%= @the_gameplayer.id %>"  method="post" >
+    <div>
+      <label for="user_id_box">
+        User
+      </label>
+
+      <input type="text" id="user_id_box" name="query_user_id" value="<%= @the_gameplayer.user_id %>">
+    </div>
+
+    <div>
+      <label for="game_id_box">
+        Game
+      </label>
+
+      <input type="text" id="game_id_box" name="query_game_id" value="<%= @the_gameplayer.game_id %>">
+    </div>
+
+    <div>
+      <label for="seat_number_box">
+        Seat number
+      </label>
+
+      <input type="text" id="seat_number_box" name="query_seat_number" value="<%= @the_gameplayer.seat_number %>">
+    </div>
+
+    <div>
+      <label for="score_box">
+        Score
+      </label>
+
+      <input type="text" id="score_box" name="query_score" value="<%= @the_gameplayer.score %>">
+    </div>
+
+    <div>
+      <label for="hand_cards_box">
+        Hand cards
+      </label>
+
+      <input type="text" id="hand_cards_box" name="query_hand_cards" value="<%= @the_gameplayer.hand_cards %>">
+    </div>
+
+    <button type="submit">
+      Update gameplayer
+    </button>
+  </form>
+</article>
+
+<hr>

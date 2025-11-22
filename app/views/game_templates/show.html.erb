@@ -1,0 +1,173 @@
+<h1>
+  Game #<%= @the_game.id %> details
+</h1>
+
+<article>
+  <div>
+    <a href="/games">
+      Go back
+    </a>
+  </div>
+
+  <div>
+    <a href="/delete_game/<%= @the_game.id %>">
+      Delete game
+    </a>
+  </div>
+  <dl>
+    <dt>
+      Status
+    </dt>
+    <dd>
+      <%= @the_game.status %>
+    </dd>
+
+    <dt>
+      Creator
+    </dt>
+    <dd>
+      <%= @the_game.creator_id %>
+    </dd>
+
+    <dt>
+      Table cards
+    </dt>
+    <dd>
+      <%= @the_game.table_cards %>
+    </dd>
+
+    <dt>
+      Deck state
+    </dt>
+    <dd>
+      <%= @the_game.deck_state %>
+    </dd>
+
+    <dt>
+      Winning user
+    </dt>
+    <dd>
+      <%= @the_game.winning_user_id %>
+    </dd>
+
+    <dt>
+      Started at
+    </dt>
+    <dd>
+      <%= @the_game.started_at %>
+    </dd>
+
+    <dt>
+      Ended at
+    </dt>
+    <dd>
+      <%= @the_game.ended_at %>
+    </dd>
+
+    <dt>
+      Gameplayers count
+    </dt>
+    <dd>
+      <%= @the_game.gameplayers_count %>
+    </dd>
+
+    <dt>
+      Created at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_game.created_at) %> ago
+    </dd>
+
+    <dt>
+      Updated at
+    </dt>
+    <dd>
+      <%= time_ago_in_words(@the_game.updated_at) %> ago
+    </dd>
+  </dl>
+</article>
+
+<hr>
+
+
+<article>
+  <header>
+    <h2>
+      Edit game
+    </h2>
+  </header>
+
+  <form action="/modify_game/<%= @the_game.id %>"  method="post" >
+    <div>
+      <label for="status_box">
+        Status
+      </label>
+
+      <input type="text" id="status_box" name="query_status" value="<%= @the_game.status %>">
+    </div>
+
+    <div>
+      <label for="creator_id_box">
+        Creator
+      </label>
+
+      <input type="text" id="creator_id_box" name="query_creator_id" value="<%= @the_game.creator_id %>">
+    </div>
+
+    <div>
+      <label for="table_cards_box">
+        Table cards
+      </label>
+
+      <input type="text" id="table_cards_box" name="query_table_cards" value="<%= @the_game.table_cards %>">
+    </div>
+
+    <div>
+      <label for="deck_state_box">
+        Deck state
+      </label>
+
+      <input type="text" id="deck_state_box" name="query_deck_state" value="<%= @the_game.deck_state %>">
+    </div>
+
+    <div>
+      <label for="winning_user_id_box">
+        Winning user
+      </label>
+
+      <input type="text" id="winning_user_id_box" name="query_winning_user_id" value="<%= @the_game.winning_user_id %>">
+    </div>
+
+    <div>
+      <label for="started_at_box">
+        Started at
+      </label>
+
+      <input type="datetime-local" id="started_at_box" name="query_started_at"
+         value="<%= @the_game.started_at %>">
+    </div>
+
+    <div>
+      <label for="ended_at_box">
+        Ended at
+      </label>
+
+      <input type="datetime-local" id="ended_at_box" name="query_ended_at"
+         value="<%= @the_game.ended_at %>">
+    </div>
+
+    <div>
+      <label for="gameplayers_count_box">
+        Gameplayers count
+      </label>
+
+      <input type="text" id="gameplayers_count_box" name="query_gameplayers_count" value="<%= @the_game.gameplayers_count %>">
+    </div>
+
+    <button type="submit">
+      Update game
+    </button>
+  </form>
+</article>
+
+<hr>
