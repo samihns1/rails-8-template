@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Rails 8 Template" %></title>
+    <title><%= content_for(:title) || "Basra Online" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -17,15 +17,68 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <!-- The official Pico CSS stylesheet -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.conditional.css">
+
+    <!-- The official Bootstrap utilities stylesheet -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/twbs/bootstrap@main/dist/css/bootstrap-utilities.css">
+
+    <!-- Our modifications to default Pico CSS styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/firstdraft/pico.firstdraft.css@latest/pico.firstdraft.css">
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="pico">
+    <header>
+      <div class="container-two-thirds">
+        <nav>
+          <ul>
+            <li>
+              <a href="/">
+                <strong>
+                  Basra
+                </strong>
+              </a>
+              </li>
+            <% if current_user == nil %>
+            <li>
+              <a href="/users/sign_in">Log in</a>
+            </li>
+            <li>
+              <a href="/users/sign_up">Sign up</a>
+            </li>
+            <% else %>
+            <li>
+              <a href="/users/edit">Edit Profile</a>
+            </li>
+            <li>
+              <a href="/users/sign_out">Log out</a>
+            </li>
+            <% end %>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="container-two-thirds">
+        <div class="text-success">
+          <%= notice %>
+        </div>
+
+        <div class="text-danger">
+          <%= alert %>
+        </div>
+        <%= yield %>
+      </div>
+    </main>
+
+    <footer class="text-center">
+      Samih Sawiris 2025. All rights reserved.
+    </footer>
   </body>
 </html>

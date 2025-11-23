@@ -17,17 +17,18 @@ class GamesController < ApplicationController
     render({ :template => "game_templates/show" })
   end
 
-  def create
-    the_game = Game.new
-    the_game.status = params.fetch("query_status")
-    the_game.creator_id = params.fetch("query_creator_id")
-    the_game.table_cards = params.fetch("query_table_cards")
-    the_game.deck_state = params.fetch("query_deck_state")
-    the_game.winning_user_id = params.fetch("query_winning_user_id")
-    the_game.started_at = params.fetch("query_started_at")
-    the_game.ended_at = params.fetch("query_ended_at")
-    the_game.gameplayers_count = params.fetch("query_gameplayers_count")
+def create
+  @game = Game.new
 
+  @game.creator = current_user
+  @game.status  = "waiting"
+  @game.started_at = Time.current
+
+  # Initialize game state
+  @game.deck_state  = initial_deck.to_json    # you’ll write initial_deck later
+  @game.table_cards = [].to_json
+  # winning_user_id, ended_at, gameplayers_count can stay nil/0 for now
+  
     if the_game.valid?
       the_game.save
       redirect_to("/games", { :notice => "Game created successfully." })
