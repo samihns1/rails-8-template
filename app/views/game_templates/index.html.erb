@@ -16,19 +16,3 @@
       Start game
     </button>
   </form>
-
-<hr>
-
-<article>
-  <ul>
-    <% @list_of_games.each do |a_game| %>
-      <li>
-        <a href="/games/<%= a_game.id %>">
-          Game #<%= a_game.id %>
-        </a>
-      </li>
-    <% end %>
-  </ul>
-</article>
-
-<hr>

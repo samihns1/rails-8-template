@@ -1,0 +1,28 @@
+<h1>Join a Game</h1>
+
+<article>
+  <% if alert.present? %>
+    <p style="color: red;"><%= alert %></p>
+  <% end %>
+
+  <form action="/join_game" method="post">
+    <div>
+      <label for="room_code_box">Enter room code</label>
+      <input type="text" id="room_code_box" name="query_room_code">
+    </div>
+
+    <button type="submit">Join Game</button>
+  </form>
+</article>
+
+<article>
+  <ul>
+    <% @list_of_games.each do |a_game| %>
+      <li>
+        <a href="/games/<%= a_game.id %>">
+          Game #<%= a_game.id %>
+        </a>
+      </li>
+    <% end %>
+  </ul>
+</article>
