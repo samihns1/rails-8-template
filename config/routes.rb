@@ -73,10 +73,14 @@ Rails.application.routes.draw do
   get("/games", { :controller => "games", :action => "index" })
 
   get("/games/:path_id", { :controller => "games", :action => "show" })
+  get("/games/:path_id/state", { :controller => "games", :action => "state" })
 
   # UPDATE
 
   post("/modify_game/:path_id", { :controller => "games", :action => "update" })
+
+  # Start game (deal initial hands and table)
+  post("/start_game/:path_id", { :controller => "games", :action => "start" })
 
   # DELETE
   get("/delete_game/:path_id", { :controller => "games", :action => "destroy" })
@@ -85,6 +89,7 @@ Rails.application.routes.draw do
 
   get("/join", { :controller => "games", :action => "join_form" })
   post("/join_game", { :controller => "games", :action => "join_by_code" })
+  post("/join_game/:path_id", { :controller => "games", :action => "join_by_id" })
 
   devise_for :users
 end

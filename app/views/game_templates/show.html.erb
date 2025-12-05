@@ -18,89 +18,110 @@
     <dd><%= @the_game.status.capitalize %></dd>
   </article>
 
+  <% if @the_game.status == 'started' %>
+    <article>
+      <dt>Current turn</dt>
+      <dd>
+        <% current_player = User.find_by(id: @the_game.current_player_id) %>
+        <%= current_player ? current_player.username : '—' %>
+      </dd>
+    </article>
+  <% end %>
+
+  <% if @the_game.status != 'started' %>
+    <article>
+      <h3>Game</h3>
+      <% if current_user && current_user.id == @the_game.creator_id %>
+        <div style="margin-top: 0.5rem;">
+          <form action="/start_game/<%= @the_game.id %>" method="post">
+            <button type="submit">Start game</button>
+          </form>
+        </div>
+      <% else %>
+        <dd>Waiting for host to start the game.</dd>
+      <% end %>
+    </article>
+  <% end %>
+
+  <% if @the_game.status != 'started' && current_user.id == @the_game.creator_id %>
+    <article>
+      <h3>Invite players</h3>
+
+      <form action="/insert_invitation" method="post">
+        <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
+
+        <div>
+          <label for="email_invite_box">Player email</label>
+          <input type="text" id="email_invite_box" name="query_recipient_email">
+        </div>
+
+        <button type="submit">Send Invite</button>
+      </form>
+    
+        <% if current_user && @current_gameplayer.nil? && current_user.id != @the_game.creator_id %>
+          <form action="/join_game/<%= @the_game.id %>" method="post" style="margin-top: 0.5rem;">
+            <button type="submit">Join this game</button>
+          </form>
+        <% elsif @current_gameplayer.present? %>
+          <div style="margin-top:0.5rem; color: green;">You have joined as seat <%= @current_gameplayer.seat_number %>.</div>
+        <% end %>
+    </article>
+  <% else %>
+
+    <% if @the_game.status == 'started' %>
+      <article>
+        <h3>Table</h3>
+        <% table = @the_game.table_cards_array %>
+        <div class="center-table" style="display:flex; gap:1rem; align-items:center;">
+          <% if table.empty? %>
+            <div class="card-back">(no cards)</div>
+          <% else %>
+            <% table.each do |c| %>
+              <div class="<%= card_css_class(c) %>"><%= card_display_name(c) %></div>
+            <% end %>
+          <% end %>
+
+          <div style="margin-left:1rem; font-size:0.9rem; color:#333;">
+            Deck: <%= @the_game.deck_state_array.length %> cards
+          </div>
+        </div>
+      </article>
+    <% end %>
+
+    <% if current_user && @current_gameplayer.present? %>
+      <article>
+        <h3>Your hand</h3>
+
+        <% hand = @current_gameplayer.hand_cards_array %>
+
+        <% if hand.empty? %>
+          <p>You have no cards in hand.</p>
+        <% else %>
+          <ul style="display: flex; gap: 1rem; list-style: none; padding: 0;">
+            <% 4.times do |i| %>
+              <% card = hand[i] %>
+              <li style="text-align: center;">
+                <span class="<%= card_css_class(card) %>"><%= card_display_name(card) %></span>
+                  <% if card.present? && current_user.id == @the_game.current_player_id %>
+                    <form action="/insert_move" method="post" style="margin-top: 0.5rem;">
+                      <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
+                      <input type="hidden" name="query_card_played" value="<%= card %>">
+                      <button type="submit">Play</button>
+                    </form>
+                  <% end %>
+              </li>
+            <% end %>
+            <% if current_user.id != @the_game.current_player_id %>
+              <% other = User.find_by(id: @the_game.current_player_id) %>
+              <div style="margin-top:0.5rem; color:#666;">Waiting for <%= other ? other.username : 'player' %>'s turn</div>
+            <% end %>
+          </ul>
+        <% end %>
+      </article>
+    <% end %>
+  <% end %>
+
   <article>
-    <h3>Game</h3>
-    <!--<span class="<%#= ['hearts', 'diamonds'].include?(card.suit) ? 'red-button' : 'black-button' %>">-->
-    <%#= card.name %>
-    <!--    </span>-->
-
-    <span class="red-button">Card 1</span>
-    <span class="red-button">Card 2</span>
-    <span class="black-button">Card 3</span>
-    <span class="black-button">Card 4</span>
-
-  </article>
-
-  <!--<dt>
-      Table cards
-    </dt>
-    <dd>
-      <%#= @the_game.table_cards %>-->
-  <!--    </dd>
-
-    <dt>
-      Deck state
-    </dt>
-    <dd>
-      <%#= @the_game.deck_state %>-->
-  <!--    </dd>
-
-    <dt>
-      Winning user
-    </dt>
-    <dd>
-      <%#= @the_game.winning_user_id %>-->
-  <!--    </dd>
-
-    <dt>
-      Started at
-    </dt>
-    <dd>
-      <%#= @the_game.started_at %>-->
-  <!--    </dd>
-
-    <dt>
-      Ended at
-    </dt>
-    <dd>
-      <%#= @the_game.ended_at %>-->
-  <!--    </dd>
-
-    <dt>
-      Gameplayers count
-    </dt>
-    <dd>
-      <%#= @the_game.gameplayers_count %>-->
-  <!--    </dd>
-
-    <dt>
-      Created at
-    </dt>
-    <dd>
-      <%#= time_ago_in_words(@the_game.created_at) %> ago-->
-  <!--    </dd>
-
-    <dt>
-      Updated at
-    </dt>
-    <dd>
-      <%#= time_ago_in_words(@the_game.updated_at) %> ago-->
-  <!--    </dd>-->
-
-  <article>
-    <h3>Invite players</h3>
-
-    <form action="/insert_invitation" method="post">
-      <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
-
-      <div>
-        <label for="email_invite_box">Player email</label>
-        <input type="text" id="email_invite_box" name="query_recipient_email">
-      </div>
-
-      <button type="submit">Send Invite</button>
-    </form>
-
     <div>
       <a href="/delete_game/<%= @the_game.id %>">
         Delete game
@@ -108,82 +129,35 @@
     </div>
   </article>
 
-  <!--<article>
-  <header>
-    <h2>
-      Edit game
-    </h2>
-  </header>
+  <script>
+    (function() {
+      const gameId = <%= @the_game.id %>;
+      let lastFingerprint = null;
 
-  <form action="/modify_game/<%#= @the_game.id %>"  method="post" >
-    <div>
-      <label for="status_box">
-        Status
-      </label>
+      async function poll() {
+        try {
+          const res = await fetch(`/games/${gameId}/state`);
+          if (!res.ok) return;
+          const json = await res.json();
 
-      <input type="text" id="status_box" name="query_status" value="<%#= @the_game.status %>">
-    </div>
+          const fingerprint = JSON.stringify({
+            table: json.table_cards,
+            deck_count: json.deck_count,
+            current_player_id: json.current_player_id,
+            hand: json.hand
+          });
 
-    <div>
-      <label for="creator_id_box">
-        Creator
-      </label>
+          if (lastFingerprint !== null && lastFingerprint !== fingerprint) {
+            window.location.reload();
+          }
 
-      <input type="text" id="creator_id_box" name="query_creator_id" value="<%#= @the_game.creator_id %>">
-    </div>
-
-    <div>
-      <label for="table_cards_box">
-        Table cards
-      </label>
-
-      <input type="text" id="table_cards_box" name="query_table_cards" value="<%#= @the_game.table_cards %>">
-    </div>
-
-    <div>
-      <label for="deck_state_box">
-        Deck state
-      </label>
-
-      <input type="text" id="deck_state_box" name="query_deck_state" value="<%#= @the_game.deck_state %>">
-    </div>
-
-    <div>
-      <label for="winning_user_id_box">
-        Winning user
-      </label>
-
-      <input type="text" id="winning_user_id_box" name="query_winning_user_id" value="<%#= @the_game.winning_user_id %>">
-    </div>
-
-    <div>
-      <label for="started_at_box">
-        Started at
-      </label>
-
-      <input type="datetime-local" id="started_at_box" name="query_started_at"
-         value="<%#= @the_game.started_at %>">
-    </div>
-
-    <div>
-      <label for="ended_at_box">
-        Ended at
-      </label>
-
-      <input type="datetime-local" id="ended_at_box" name="query_ended_at"
-         value="<%#= @the_game.ended_at %>">
-    </div>
-
-    <div>
-      <label for="gameplayers_count_box">
-        Gameplayers count
-      </label>
-
-      <input type="text" id="gameplayers_count_box" name="query_gameplayers_count" value="<%#= @the_game.gameplayers_count %>">
-    </div>
-
-    <button type="submit">
-      Update game
-    </button>
-  </form>
-</article>-->
+          lastFingerprint = fingerprint;
+        } catch (err) {
+          console.debug('game poll error', err);
+        }
+      }
+      
+      poll();
+      setInterval(poll, 2000);
+    })();
+  </script>

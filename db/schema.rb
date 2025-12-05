@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_23_224635) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_01_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -38,6 +38,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_224635) do
     t.string "room_code"
     t.string "name"
     t.integer "max_players"
+    t.integer "current_player_id"
+    t.index ["current_player_id"], name: "index_games_on_current_player_id"
   end
 
   create_table "invitations", force: :cascade do |t|

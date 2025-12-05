@@ -35,6 +35,14 @@ class MovesController < ApplicationController
       return
     end
 
+    # Enforce turn order: only current_player may play
+    if @game.current_player_id.present? && current_user.id != @game.current_player_id
+      current_player = User.where(id: @game.current_player_id).first
+      name = current_player ? current_player.username : 'another player'
+      redirect_to("/games/#{@game.id}", { alert: "It's not your turn. Waiting for #{name}." })
+      return
+    end
+
     hand = gameplayer.hand_cards_array
 
     unless hand.include?(card_code)
@@ -47,11 +55,15 @@ class MovesController < ApplicationController
 
     table = @game.table_cards_array
 
-    capture_result = apply_basra_rules(table, card_code)
+    capture_result = Basra::Engine.apply_rules(table, card_code)
     captured_cards = capture_result[:captured_cards]
     basra = capture_result[:basra]
 
-    new_table = table - captured_cards
+    if captured_cards.any?
+      new_table = table - captured_cards
+    else
+      new_table = table + [card_code]
+    end
     @game.table_cards_array = new_table
 
     move = Move.new
@@ -68,10 +80,48 @@ class MovesController < ApplicationController
     end
 
     if move.valid? && gameplayer.valid? && @game.valid?
+      # Determine next player (rotate by seat number)
+      players = @game.gameplayers.order(:seat_number).to_a
+      current_index = players.find_index { |gp| gp.user_id == current_user.id }
+      next_user_id = nil
+      if current_index
+        next_gp = players[(current_index + 1) % players.length]
+        next_user_id = next_gp.user_id
+      end
+
       Move.transaction do
         move.save!
         gameplayer.save!
+        # set next player's turn (if found)
+        @game.current_player_id = next_user_id if next_user_id
         @game.save!
+      end
+
+      all_hands_empty = @game.gameplayers.all? { |gp| gp.hand_cards_array.empty? }
+
+      if all_hands_empty
+        if @game.deck_state_array.any?
+          Basra::Engine.deal_next_hand(@game)
+        else
+          if @game.table_cards_array.any?
+            last_capture = @game.moves.where.not(captured_cards: [nil, "[]"]).order(created_at: :desc).first
+            if last_capture.present?
+              last_take = Move.new
+              last_take.game_id = @game.id
+              last_take.user_id = last_capture.user_id
+              last_take.move_number = (@game.moves.count + 1)
+              last_take.card_played = nil
+              last_take.captured_cards = @game.table_cards_array.to_json
+              last_take.basra = false
+              last_take.points_earned = 0
+              Move.transaction do
+                last_take.save!
+                @game.table_cards_array = []
+                @game.save!
+              end
+            end
+          end
+        end
       end
 
       notice_msg = "Played #{card_code}."

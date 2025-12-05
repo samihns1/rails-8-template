@@ -6,6 +6,10 @@ class GamesController < ApplicationController
   def show
     the_id = params.fetch("path_id")
     @the_game = Game.where({ :id => the_id }).at(0)
+    if @the_game.nil?
+      redirect_to("/", { alert: "Game was deleted." })
+      return
+    end
 
     if current_user
       @current_gameplayer = Gameplayer.find_by(
@@ -19,7 +23,7 @@ class GamesController < ApplicationController
 
   def create
     if current_user.nil?
-      redirect_to("/", { :alert => "You must have an account to start a game." })
+      redirect_to("/new_user", { :alert => "You must have an account to start a game." })
       return
     end
 
@@ -75,6 +79,31 @@ class GamesController < ApplicationController
     redirect_to("/games", { :notice => "Game deleted successfully." })
   end
 
+  def start
+    the_id = params.fetch("path_id")
+    @the_game = Game.where({ id: the_id }).at(0)
+
+    if @the_game.nil?
+      redirect_to("/games", { alert: "Game not found." })
+      return
+    end
+
+    begin
+      Basra::Engine.deal_initial(@the_game)
+
+      players = @the_game.gameplayers.to_a
+      if players.any?
+        starter = players.sample
+        @the_game.current_player_id = starter.user_id
+        @the_game.save!
+      end
+
+      redirect_to("/games/#{@the_game.id}", { notice: "Game started. Player #{starter&.seat_number} goes first." })
+    rescue => e
+      redirect_to("/games/#{@the_game.id}", { alert: "Failed to start game: #{e.message}" })
+    end
+  end
+
   def join_form
     matching_games = Game.all
     @list_of_games = matching_games.order({ :created_at => :desc })
@@ -122,6 +151,90 @@ class GamesController < ApplicationController
     else
       redirect_to("/join", { :alert => new_gp.errors.full_messages.to_sentence })
     end
+  end
+
+  def join_by_id
+    if current_user.nil?
+      redirect_to("/", { alert: "You must be signed in to join a game." })
+      return
+    end
+
+    the_id = params.fetch("path_id")
+    the_game = Game.where({ id: the_id }).at(0)
+
+    if the_game.nil?
+      redirect_to("/games", { alert: "Game not found." })
+      return
+    end
+
+    existing = Gameplayer.where({ game_id: the_game.id, user_id: current_user.id }).at(0)
+    if existing.present?
+      redirect_to("/games/#{the_game.id}", { notice: "You are already in that game." })
+      return
+    end
+
+    if the_game.gameplayers.count >= the_game.max_players
+      redirect_to("/games/#{the_game.id}", { alert: "This game is full." })
+      return
+    end
+
+    next_seat = the_game.gameplayers.count + 1
+
+    new_gp = Gameplayer.new
+    new_gp.game_id = the_game.id
+    new_gp.user_id = current_user.id
+    new_gp.seat_number = next_seat
+    new_gp.score = 0
+    new_gp.hand_cards = [].to_json
+
+    if new_gp.save
+      if the_game.status == 'started'
+        deck = the_game.deck_state_array
+        hand = []
+        4.times do
+          break if deck.empty?
+          hand << deck.pop
+        end
+        new_gp.hand_cards_array = hand
+        new_gp.save!
+
+        the_game.deck_state_array = deck
+        the_game.save!
+      end
+
+      redirect_to("/games/#{the_game.id}", { notice: "Joined game! You are seat #{new_gp.seat_number}." })
+    else
+      redirect_to("/games/#{the_game.id}", { alert: new_gp.errors.full_messages.to_sentence })
+    end
+  end
+
+  def state
+    the_id = params.fetch("path_id")
+    the_game = Game.where({ id: the_id }).at(0)
+
+    if the_game.nil?
+      render json: { error: "not_found" }, status: :not_found
+      return
+    end
+
+    current_gp = nil
+    if current_user
+      current_gp = Gameplayer.find_by(game_id: the_game.id, user_id: current_user.id)
+    end
+
+    players = the_game.gameplayers.order(:seat_number).map do |gp|
+      { seat: gp.seat_number, user_id: gp.user_id, username: gp.user&.username }
+    end
+
+    render json: {
+      id: the_game.id,
+      status: the_game.status,
+      table_cards: the_game.table_cards_array,
+      deck_count: the_game.deck_state_array.length,
+      current_player_id: the_game.current_player_id,
+      players: players,
+      hand: (current_gp ? current_gp.hand_cards_array : [])
+    }
   end
 
   private
