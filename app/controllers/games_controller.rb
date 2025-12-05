@@ -112,7 +112,7 @@ class GamesController < ApplicationController
 
   def join_by_code
     if current_user.nil?
-      redirect_to("/", { :alert => "You must be signed in to join a game." })
+      redirect_to("/new_user", { :alert => "Please sign in or create an account to join a game." })
       return
     end
 
@@ -155,7 +155,7 @@ class GamesController < ApplicationController
 
   def join_by_id
     if current_user.nil?
-      redirect_to("/", { alert: "You must be signed in to join a game." })
+      redirect_to("/new_user", { alert: "Please sign in or create an account to join a game." })
       return
     end
 

@@ -21,161 +21,161 @@
   </article>
 <% end %>
 
-  <% if @the_game.status == 'started' %>
-    <article>
-      <dt>Current turn</dt>
-      <dd>
-        <% current_player = User.find_by(id: @the_game.current_player_id) %>
-        <%= current_player ? current_player.username : '—' %>
-      </dd>
-    </article>
-  <% end %>
+<% if @the_game.status == 'started' %>
+  <article>
+    <dt>Current turn</dt>
+    <dd>
+      <% current_player = User.find_by(id: @the_game.current_player_id) %>
+      <%= current_player ? current_player.username : '—' %>
+    </dd>
+  </article>
+<% end %>
 
-  <% if @the_game.status != 'started' %>
-    <article>
-      <h3>Game</h3>
-      <% if current_user && current_user.id == @the_game.creator_id %>
-        <div style="margin-top: 0.5rem;">
-          <form action="/start_game/<%= @the_game.id %>" method="post">
-            <button type="submit">Start game</button>
-          </form>
-        </div>
-      <% else %>
-        <dd>Waiting for host to start the game.</dd>
-      <% end %>
-    </article>
-  <% end %>
-
-  <% if @the_game.status != 'started' && current_user.id == @the_game.creator_id %>
-    <article>
-      <h3>Invite players</h3>
-
-      <form action="/insert_invitation" method="post">
-        <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
-
-        <div>
-          <label for="email_invite_box">Player email</label>
-          <input type="text" id="email_invite_box" name="query_recipient_email">
-        </div>
-
-        <button type="submit">Send Invite</button>
-      </form>
-
-      <% if current_user && @current_gameplayer.nil? && current_user.id != @the_game.creator_id %>
-        <form action="/join_game/<%= @the_game.id %>" method="post" style="margin-top: 0.5rem;">
-          <button type="submit">Join this game</button>
+<% if @the_game.status != 'started' %>
+  <article>
+    <h3>Game</h3>
+    <% if current_user && current_user.id == @the_game.creator_id %>
+      <div style="margin-top: 0.5rem;">
+        <form action="/start_game/<%= @the_game.id %>" method="post">
+          <button type="submit">Start game</button>
         </form>
-      <% elsif @current_gameplayer.present? %>
-        <div style="margin-top:0.5rem; color: green;">You have joined as seat <%= @current_gameplayer.seat_number %>.</div>
-      <% end %>
-    </article>
-  <% else %>
-
-    <% if @the_game.status == 'started' %>
-      <article>
-        <h3>Table</h3>
-        <% table = @the_game.table_cards_array %>
-        <div class="center-table" style="display:flex; gap:1rem; align-items:center;">
-          <% if table.empty? %>
-            <div class="card-back">(no cards)</div>
-          <% else %>
-            <% table.each do |c| %>
-              <div class="<%= card_css_class(c) %>"><%= card_display_name(c) %></div>
-            <% end %>
-          <% end %>
-
-          <div style="margin-left:1rem; font-size:0.9rem; color:#333;">
-            Deck: <%= @the_game.deck_state_array.length %> cards
-          </div>
-        </div>
-      </article>
+      </div>
+    <% else %>
+      <dd>Waiting for host to start the game.</dd>
     <% end %>
+  </article>
+<% end %>
 
-    <% if current_user && @current_gameplayer.present? %>
-      <article>
-        <h3>Your hand</h3>
+<% if @the_game.status != 'started' && current_user.id == @the_game.creator_id %>
+  <article>
+    <h3>Invite players</h3>
 
-        <% hand = @current_gameplayer.hand_cards_array %>
+    <form action="/insert_invitation" method="post">
+      <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
 
-        <% if hand.empty? %>
-          <p>You have no cards in hand.</p>
-        <% else %>
-          <ul style="display: flex; gap: 1rem; list-style: none; padding: 0;">
-            <% 4.times do |i| %>
-              <% card = hand[i] %>
-              <li style="text-align: center;">
-                <span class="<%= card_css_class(card) %>"><%= card_display_name(card) %></span>
-                <% if card.present? && current_user.id == @the_game.current_player_id %>
-                  <form action="/insert_move" method="post" style="margin-top: 0.5rem;">
-                    <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
-                    <input type="hidden" name="query_card_played" value="<%= card %>">
-                    <button type="submit">Play</button>
-                  </form>
-                <% end %>
-              </li>
-            <% end %>
-            <% if current_user.id != @the_game.current_player_id %>
-              <% other = User.find_by(id: @the_game.current_player_id) %>
-              <div style="margin-top:0.5rem; color:#666;">Waiting for <%= other ? other.username : 'player' %>'s turn</div>
-            <% end %>
-          </ul>
-        <% end %>
-      </article>
+      <div>
+        <label for="email_invite_box">Player email</label>
+        <input type="text" id="email_invite_box" name="query_recipient_email">
+      </div>
+
+      <button type="submit">Send Invite</button>
+    </form>
+
+    <% if current_user && @current_gameplayer.nil? && current_user.id != @the_game.creator_id %>
+      <form action="/join_game/<%= @the_game.id %>" method="post" style="margin-top: 0.5rem;">
+        <button type="submit">Join this game</button>
+      </form>
+    <% elsif @current_gameplayer.present? %>
+      <div style="margin-top:0.5rem; color: green;">You have joined as seat <%= @current_gameplayer.seat_number %>.</div>
     <% end %>
-  <% end %>
+  </article>
+<% else %>
 
   <% if @the_game.status == 'started' %>
     <article>
-      <dl style="display: grid; grid-template-columns: 150px auto; row-gap: 8px;">
-        <dt>Game code</dt>
-        <dd><%= @the_game.room_code %></dd>
+      <h3>Table</h3>
+      <% table = @the_game.table_cards_array %>
+      <div class="center-table" style="display:flex; gap:1rem; align-items:center;">
+        <% if table.empty? %>
+          <div class="card-back">(no cards)</div>
+        <% else %>
+          <% table.each do |c| %>
+            <div class="<%= card_css_class(c) %>"><%= card_display_name(c) %></div>
+          <% end %>
+        <% end %>
 
-        <dt>Creator</dt>
-        <dd><%= @the_game.creator&.username %></dd>
-
-        <dt>Status</dt>
-        <dd><%= @the_game.status.capitalize %></dd>
-      </dl>
-    </article>
-  <% end %>
-
-    <article>
-      <div>
-        <a href="/delete_game/<%= @the_game.id %>">
-          Delete game
-        </a>
+        <div style="margin-left:1rem; font-size:0.9rem; color:#333;">
+          Deck: <%= @the_game.deck_state_array.length %> cards
+        </div>
       </div>
     </article>
+  <% end %>
 
-    <script>
-      (function() {
-        const gameId = <%= @the_game.id %>;
-        let lastFingerprint = null;
+  <% if current_user && @current_gameplayer.present? && (@the_game.status == 'started' || current_user.id == @the_game.creator_id) %>
+    <article>
+      <h3>Your hand</h3>
 
-        async function poll() {
-          try {
-            const res = await fetch(`/games/${gameId}/state`);
-            if (!res.ok) return;
-            const json = await res.json();
+      <% hand = @current_gameplayer.hand_cards_array %>
 
-            const fingerprint = JSON.stringify({
-              table: json.table_cards,
-              deck_count: json.deck_count,
-              current_player_id: json.current_player_id,
-              hand: json.hand
-            });
+      <% if hand.empty? %>
+        <p>You have no cards in hand.</p>
+      <% else %>
+        <ul style="display: flex; gap: 1rem; list-style: none; padding: 0;">
+          <% 4.times do |i| %>
+            <% card = hand[i] %>
+            <li style="text-align: center;">
+              <span class="<%= card_css_class(card) %>"><%= card_display_name(card) %></span>
+              <% if card.present? && current_user.id == @the_game.current_player_id %>
+                <form action="/insert_move" method="post" style="margin-top: 0.5rem;">
+                  <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
+                  <input type="hidden" name="query_card_played" value="<%= card %>">
+                  <button type="submit">Play</button>
+                </form>
+              <% end %>
+            </li>
+          <% end %>
+          <% if current_user.id != @the_game.current_player_id %>
+            <% other = User.find_by(id: @the_game.current_player_id) %>
+            <div style="margin-top:0.5rem; color:#666;">Waiting for <%= other ? other.username : 'player' %>'s turn</div>
+          <% end %>
+        </ul>
+      <% end %>
+    </article>
+  <% end %>
+<% end %>
 
-            if (lastFingerprint !== null && lastFingerprint !== fingerprint) {
-              window.location.reload();
-            }
+<% if @the_game.status == 'started' %>
+  <article>
+    <dl style="display: grid; grid-template-columns: 150px auto; row-gap: 8px;">
+      <dt>Game code</dt>
+      <dd><%= @the_game.room_code %></dd>
 
-            lastFingerprint = fingerprint;
-          } catch (err) {
-            console.debug('game poll error', err);
-          }
+      <dt>Creator</dt>
+      <dd><%= @the_game.creator&.username %></dd>
+
+      <dt>Status</dt>
+      <dd><%= @the_game.status.capitalize %></dd>
+    </dl>
+  </article>
+<% end %>
+
+<article>
+  <div>
+    <a href="/delete_game/<%= @the_game.id %>">
+      Delete game
+    </a>
+  </div>
+</article>
+
+<script>
+  (function() {
+    const gameId = <%= @the_game.id %>;
+    let lastFingerprint = null;
+
+    async function poll() {
+      try {
+        const res = await fetch(`/games/${gameId}/state`);
+        if (!res.ok) return;
+        const json = await res.json();
+
+        const fingerprint = JSON.stringify({
+          table: json.table_cards,
+          deck_count: json.deck_count,
+          current_player_id: json.current_player_id,
+          hand: json.hand
+        });
+
+        if (lastFingerprint !== null && lastFingerprint !== fingerprint) {
+          window.location.reload();
         }
 
-        poll();
-        setInterval(poll, 2000);
-      })();
-    </script>
+        lastFingerprint = fingerprint;
+      } catch (err) {
+        console.debug('game poll error', err);
+      }
+    }
+
+    poll();
+    setInterval(poll, 2000);
+  })();
+</script>

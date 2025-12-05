@@ -1,4 +1,5 @@
 module Basra
+  require 'set'
   class Engine
     SUITS = %w[H D C S].freeze
     RANKS = %w[A 2 3 4 5 6 7 8 9 10 J Q K].freeze
@@ -83,8 +84,8 @@ module Basra
 
       value = card_value(rank)
       if value
-        sum_combo = find_sum_combo(table_cards, value)
-        captured.concat(sum_combo) if sum_combo
+        sum_combos = find_best_disjoint_sum_combos(table_cards, value)
+        captured.concat(sum_combos.flatten) if sum_combos.any?
       end
 
       captured.uniq!
@@ -126,6 +127,53 @@ module Basra
         end
       end
       nil
+    end
+
+    def self.find_all_sum_combos(table_cards, target)
+      numeric_cards = table_cards.select { |c| card_value(card_rank(c)) }
+      combos = []
+      n = numeric_cards.length
+      (1..n).each do |k|
+        numeric_cards.combination(k).each do |combo|
+          sum = combo.map { |c| card_value(card_rank(c)) }.sum
+          combos << combo if sum == target
+        end
+      end
+      combos
+    end
+
+    def self.find_best_disjoint_sum_combos(table_cards, target)
+      combos = find_all_sum_combos(table_cards, target)
+      return [] if combos.empty?
+
+      best = []
+
+
+  combos.sort_by! { |c| -c.length }
+
+      backtrack = lambda do |i, selected, used_set|
+        if selected.flatten.length > best.flatten.length
+          best.replace(selected.map(&:dup))
+        end
+
+        return if i >= combos.length
+
+        (i...combos.length).each do |j|
+          combo = combos[j]
+          conflict = combo.any? { |card| used_set.include?(card) }
+          next if conflict
+
+          used_set.merge(combo)
+          selected << combo
+          backtrack.call(j + 1, selected, used_set)
+          selected.pop
+          combo.each { |c| used_set.delete(c) }
+        end
+      end
+
+      backtrack.call(0, [], Set.new)
+
+      best
     end
   end
 end
