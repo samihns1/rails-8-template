@@ -31,4 +31,28 @@ class User < ApplicationRecord
 
   validates :email, uniqueness: true
   validates :username, uniqueness: true
+
+  def wins_count
+    Game.where(winning_user_id: id).count
+  end
+
+  def losses_count
+    Game.joins(:gameplayers)
+        .where(gameplayers: { user_id: id })
+        .where(status: 'finished')
+        .where.not(winning_user_id: id)
+        .distinct
+        .count
+  end
+
+  def self.leaderboard
+    wins = Game.where.not(winning_user_id: nil).group(:winning_user_id).count
+    participated = Game.joins(:gameplayers).where(status: 'finished').group('gameplayers.user_id').count
+
+    all.map do |u|
+      w = wins[u.id] || 0
+      p = participated[u.id] || 0
+      { user: u, wins: w, losses: (p - w) }
+    end.sort_by { |h| -h[:wins] }
+  end
 end
