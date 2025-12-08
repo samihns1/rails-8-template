@@ -3,21 +3,74 @@
 </h1>
 
 <article>
-    <div>
-      <a href="/games">
-        Create a Game
-      </a>
+  <div>
+    <a href="/games">
+      Create a Game
+    </a>
+  </div>
+
+  <div>
+    <a href="/join">
+      Join a Game
+    </a>
+  </div>
+
+  <div>
+    <a href="/rules">
+      Learn the Rules
+    </a>
+  </div>
+</article>
+
+<article style="margin-top: 2rem; display: flex; justify-content: center;">
+  <div style="
+    width: 100%;
+    max-width: 720px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px 20px 20px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+  ">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 8px;">
+      <h2 style="margin:0; font-size:1.4rem;">Leaderboard</h2>
     </div>
 
-    <div>
-      <a href="/join">
-        Join a Game
-      </a>
-    </div>
-
-    <div>
-      <a href="/rules">
-        Learn the Rules
-      </a>
-    </div>
+    <% leaderboard = User.leaderboard %>
+    <% if leaderboard.any? %>
+      <table style="border-collapse: collapse; width: 100%; font-size:0.95rem;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:6px 8px; border-bottom:1px solid #e5e7eb; color:#6b7280; font-weight:500;">
+              Player
+            </th>
+            <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #e5e7eb; color:#6b7280; font-weight:500;">
+              W
+            </th>
+            <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #e5e7eb; color:#6b7280; font-weight:500;">
+              L
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% leaderboard.each_with_index do |row, index| %>
+            <tr style="<%= 'background:#f9fafb;' if index.odd? %>">
+              <td style="padding:6px 8px; border-bottom:1px solid #f3f4f6;">
+                <%= row[:user].username || row[:user].email %>
+              </td>
+              <td style="padding:6px 8px; border-bottom:1px solid #f3f4f6; text-align:right;">
+                <%= row[:wins] %>
+              </td>
+              <td style="padding:6px 8px; border-bottom:1px solid #f3f4f6; text-align:right;">
+                <%= row[:losses] %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div style="padding:8px 2px; color:#6b7280; font-size:0.9rem;">
+        No records yet. Play some games to get on the leaderboard
+      </div>
+    <% end %>
+  </div>
 </article>

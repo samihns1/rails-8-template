@@ -10,7 +10,7 @@
 
 <% if @the_game.status != 'started' && @the_game.moves.count == 0 %>
   <article>
-    <dl style="display: grid; grid-template-columns: 150px auto; row-gap: 8px;">
+    <dl style="display: grid; grid-template-columns: 200px auto; row-gap: 8px;">
       <dt>Game code</dt>
       <dd><%= @the_game.room_code %></dd>
 
@@ -19,10 +19,10 @@
 
       <dt>Status</dt>
       <dd><%= @the_game.status.capitalize %></dd>
+
+      <dt>Players joined:</dt>
+      <dd><strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %></dd>
     </dl>
-    <div style="margin-top:0.5rem; color:#555; font-size:0.95rem;">
-      Players joined: <strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %>
-    </div>
   </article>
 <% end %>
 
