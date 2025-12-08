@@ -1,193 +1,418 @@
-<h1>
-  <% if @the_game.name.present? %>
-    <%= @the_game.name %>
-  <% else %>
-    Game #<%= @the_game.id %>
-  <% end %>
-</h1>
+<style>
+  .game-layout {
+    max-width: 900px;
+    margin: 1rem auto 2.5rem;
+  }
 
-<div id="game-root" data-game-id="<%= @the_game.id %>" style="display:none"></div>
+  .game-header {
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.75rem;
+  }
 
-<% if @the_game.status != 'started' && @the_game.moves.count == 0 %>
-  <article>
-    <dl style="display: grid; grid-template-columns: 200px auto; row-gap: 8px;">
-      <dt>Game code</dt>
-      <dd><%= @the_game.room_code %></dd>
+  .game-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+  }
 
-      <dt>Creator</dt>
-      <dd><%= @the_game.creator&.username %></dd>
+  .game-header-sub {
+    margin-top: 0.3rem;
+    font-size: 0.95rem;
+    color: #6b7280;
+  }
 
-      <dt>Status</dt>
-      <dd><%= @the_game.status.capitalize %></dd>
+  .section-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px 20px 18px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    margin-bottom: 1rem;
+  }
 
-      <dt>Players joined:</dt>
-      <dd><strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %></dd>
-    </dl>
-  </article>
-<% end %>
+  .section-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #111827;
+  }
 
-<%
-  all_hands_empty = @the_game.gameplayers.all? { |gp| gp.hand_cards_array.empty? }
-  deck_empty = @the_game.deck_state_array.empty?
-%>
+  .info-grid {
+    display: grid;
+    grid-template-columns: 180px auto;
+    row-gap: 8px;
+    column-gap: 8px;
+    font-size: 0.95rem;
+  }
 
-<% if deck_empty && all_hands_empty %>
-  <article>
-    <h3>Round complete — scores</h3>
-    <ul style="list-style:none; padding:0; margin-left:1.5rem;">
-      <% @the_game.gameplayers.order(:seat_number).each do |gp| %>
-        <li style="padding:0.25rem 0;"><strong>Player <%= gp.seat_number %>:</strong> <%= gp.user&.username %> — <strong><%= gp.score || 0 %></strong> points</li>
+  .info-grid dt {
+    font-weight: 600;
+    color: #4b5563;
+  }
+
+  .info-grid dd {
+    margin: 0;
+    color: #111827;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.55rem 1.1rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.1s ease, filter 0.2s ease, opacity 0.1s ease;
+  }
+
+  .btn-primary {
+    background: #3b82f6;
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: #e5e7eb;
+    color: #111827;
+  }
+
+  .btn-secondary:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+  }
+
+  .btn-danger {
+    background: #ef4444;
+    color: #ffffff;
+  }
+
+  .btn-danger:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+  }
+
+  .btn[disabled],
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+    filter: none;
+  }
+
+  .helper-text {
+    font-size: 0.9rem;
+    color: #4b5563;
+  }
+
+  .helper-text-muted {
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  .score-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0;
+  }
+
+  .score-list li {
+    padding: 0.25rem 0;
+    font-size: 0.95rem;
+  }
+
+  .table-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .table-meta {
+    font-size: 0.9rem;
+    color: #374151;
+  }
+
+  .hand-list {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0;
+    flex-wrap: wrap;
+  }
+
+  .hand-item {
+    text-align: center;
+    min-width: 70px;
+  }
+
+  .hand-item form {
+    margin-top: 0.4rem;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .status-waiting {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-started {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .status-finished {
+    background: #e5e7eb;
+    color: #374151;
+  }
+
+  .danger-link {
+    color: #ef4444;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .danger-link:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="game-layout">
+  <div class="game-header">
+    <h1>
+      <% if @the_game.name.present? %>
+        <%= @the_game.name %>
+      <% else %>
+        Game #<%= @the_game.id %>
       <% end %>
-    </ul>
+    </h1>
+    <div class="game-header-sub">
+      Code: <strong><%= @the_game.room_code %></strong>
+      &nbsp;•&nbsp;
+      <% status_class =
+        case @the_game.status
+        when 'started' then 'status-started'
+        when 'finished' then 'status-finished'
+        else 'status-waiting'
+        end %>
+      <span class="status-pill <%= status_class %>">
+        <%= @the_game.status.capitalize %>
+      </span>
+      <dd>Players joined:  <strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %></dd>
+    </div>
+  </div>
 
-    <% if current_user && current_user.id == @the_game.creator_id %>
-      <div style="margin-top:0.5rem;">
-        <form action="/start_next_round/<%= @the_game.id %>" method="post">
-          <button type="submit">Start next round</button>
-        </form>
-      </div>
-    <% else %>
-      <div style="margin-top:0.5rem; color:#666;">Waiting for the game creator to start the next round.</div>
-    <% end %>
-  </article>
-<% end %>
+  <div id="game-root" data-game-id="<%= @the_game.id %>" style="display:none"></div>
 
-<% if @the_game.status == 'started' %>
-  <article>
-    <dt>Current turn</dt>
-    <dd>
-      <% current_player = User.find_by(id: @the_game.current_player_id) %>
-      <%= current_player ? current_player.username : '—' %>
-    </dd>
-  </article>
-<% end %>
+  <%
+    all_hands_empty = @the_game.gameplayers.all? { |gp| gp.hand_cards_array.empty? }
+    deck_empty = @the_game.deck_state_array.empty?
+  %>
 
-<% if @the_game.status != 'started' %>
-  <article>
-    <h3>Game</h3>
-    <% if current_user && current_user.id == @the_game.creator_id %>
-      <% players_count = @the_game.gameplayers.count %>
-      <div style="margin-top: 0.5rem;">
-        <% if players_count >= 2 %>
-          <form action="/start_game/<%= @the_game.id %>" method="post">
-            <button type="submit">Start game</button>
-          </form>
-        <% else %>
-          <form>
-            <button type="button" disabled style="opacity:0.6;">Start game</button>
-            <span style="color:#b00; margin-left:0.5rem;">Need at least 2 players to start (currently <%= players_count %>).</span>
-          </form>
+  <% if deck_empty && all_hands_empty %>
+    <article class="section-card">
+      <h3>Round complete — scores</h3>
+      <ul class="score-list">
+        <% @the_game.gameplayers.order(:seat_number).each do |gp| %>
+          <li>
+            <strong>Player <%= gp.seat_number %>:</strong>
+            <%= gp.user&.username %> —
+            <strong><%= gp.score || 0 %></strong> points
+          </li>
         <% end %>
-      </div>
-    <% else %>
-      <dd>Waiting for host to start the game.</dd>
-    <% end %>
-  </article>
-<% end %>
+      </ul>
 
-<% if @the_game.status != 'started' && @the_game.moves.count == 0 && current_user.id == @the_game.creator_id %>
-  <article>
-    <h3>Invite players</h3>
-
-    <form action="/insert_invitation" method="post">
-      <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
-
-      <div>
-        <label for="email_invite_box">Player email</label>
-        <input type="text" id="email_invite_box" name="query_recipient_email">
-      </div>
-
-      <button type="submit">Send Invite</button>
-    </form>
-
-    <% if current_user && @current_gameplayer.nil? && current_user.id != @the_game.creator_id %>
-      <form action="/join_game/<%= @the_game.id %>" method="post" style="margin-top: 0.5rem;">
-        <button type="submit">Join this game</button>
-      </form>
-    <% elsif @current_gameplayer.present? %>
-      <div style="margin-top:0.5rem; color: green;">You have joined as seat <%= @current_gameplayer.seat_number %>.</div>
-    <% end %>
-  </article>
-<% else %>
+      <% if current_user && current_user.id == @the_game.creator_id %>
+        <div style="margin-top:0.75rem;">
+          <form action="/start_next_round/<%= @the_game.id %>" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-primary">Start next round</button>
+          </form>
+        </div>
+      <% else %>
+        <div style="margin-top:0.75rem;" class="helper-text-muted">
+          Waiting for the game creator to start the next round.
+        </div>
+      <% end %>
+    </article>
+  <% end %>
 
   <% if @the_game.status == 'started' %>
-    <article>
-      <h3>Table</h3>
-      <% table = @the_game.table_cards_array %>
-      <div class="center-table" style="display:flex; gap:1rem; align-items:center;">
-        <% if table.empty? %>
-          <div class="card-back">(no cards)</div>
-        <% else %>
-          <% table.each do |c| %>
-            <div class="<%= card_css_class(c) %>"><%= card_display_name(c) %></div>
-          <% end %>
-        <% end %>
-
-        <div style="margin-left:1rem; font-size:0.9rem; color:#333;">
-          Deck: <%= @the_game.deck_state_array.length %> cards
-        </div>
-      </div>
+    <article class="section-card">
+      <h3>Current turn</h3>
+      <% current_player = User.find_by(id: @the_game.current_player_id) %>
+      <p class="helper-text">
+        <strong>Player:</strong>
+        <%= current_player ? current_player.username : '—' %>
+      </p>
     </article>
   <% end %>
 
-  <% if current_user && @current_gameplayer.present? && (@the_game.status == 'started' || current_user.id == @the_game.creator_id) %>
-    <article>
-      <h3>Your hand</h3>
-
-      <% hand = @current_gameplayer.hand_cards_array %>
-
-      <% if hand.empty? %>
-        <p>You have no cards in hand.</p>
+  <% if @the_game.status != 'started' %>
+    <article class="section-card">
+      <h3>Game status</h3>
+      <% if current_user && current_user.id == @the_game.creator_id %>
+        <% players_count = @the_game.gameplayers.count %>
+        <div style="margin-top:0.5rem;">
+          <% if players_count >= 2 %>
+            <form action="/start_game/<%= @the_game.id %>" method="post" style="display:inline;">
+              <button type="submit" class="btn btn-primary">Start game</button>
+            </form>
+          <% else %>
+            <form style="display:inline;">
+              <button type="button" class="btn btn-primary" disabled>Start game</button>
+              <span class="helper-text" style="margin-left:0.5rem;">
+                Need at least 2 players to start (currently <%= players_count %>).
+              </span>
+            </form>
+          <% end %>
+        </div>
       <% else %>
-        <ul style="display: flex; gap: 1rem; list-style: none; padding: 0;">
-          <% 4.times do |i| %>
-            <% card = hand[i] %>
-            <li style="text-align: center;">
-              <span class="<%= card_css_class(card) %>"><%= card_display_name(card) %></span>
-              <% if card.present? && current_user.id == @the_game.current_player_id %>
-                <form action="/insert_move" method="post" style="margin-top: 0.5rem;">
-                  <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
-                  <input type="hidden" name="query_card_played" value="<%= card %>">
-                  <button type="submit">Play</button>
-                </form>
-              <% end %>
-            </li>
-          <% end %>
-          <% if current_user.id != @the_game.current_player_id %>
-            <% other = User.find_by(id: @the_game.current_player_id) %>
-            <div style="margin-top:0.5rem; color:#666;">Waiting for <%= other ? other.username : 'player' %>'s turn</div>
-          <% end %>
-        </ul>
+        <p class="helper-text-muted" style="margin-top:0.5rem;">
+          Waiting for host to start the game.
+        </p>
       <% end %>
     </article>
   <% end %>
-<% end %>
 
-<% if @the_game.status == 'started' %>
-  <article>
-    <dl style="display: grid; grid-template-columns: 150px auto; row-gap: 8px;">
-      <dt>Game code</dt>
-      <dd><%= @the_game.room_code %></dd>
+  <% if @the_game.status != 'started' && @the_game.moves.count == 0 && current_user.id == @the_game.creator_id %>
+    <article class="section-card">
+      <h3>Invite players</h3>
 
-      <dt>Creator</dt>
-      <dd><%= @the_game.creator&.username %></dd>
+      <form action="/insert_invitation" method="post" style="margin-bottom:0.75rem;">
+        <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
 
-      <dt>Status</dt>
-      <dd><%= @the_game.status.capitalize %></dd>
-    </dl>
-    <div style="margin-top:0.5rem; color:#555; font-size:0.95rem;">
-      Players joined: <strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %>
-    </div>
+        <div style="margin-bottom:0.75rem;">
+          <label for="email_invite_box" style="font-weight:600; display:block; margin-bottom:4px; color:#374151;">
+            Player email
+          </label>
+          <input type="text" id="email_invite_box" name="query_recipient_email" placeholder="friend@example.com" style="
+            width:100%;
+            max-width:360px;
+            padding:0.55rem 0.7rem;
+            border-radius:8px;
+            border:1px solid #d1d5db;
+          ">
+        </div>
+
+        <button type="submit" class="btn btn-secondary">Send invite</button>
+      </form>
+
+      <% if current_user && @current_gameplayer.nil? && current_user.id != @the_game.creator_id %>
+        <form action="/join_game/<%= @the_game.id %>" method="post" style="margin-top:0.5rem;">
+          <button type="submit" class="btn btn-primary">Join this game</button>
+        </form>
+      <% elsif @current_gameplayer.present? %>
+        <div style="margin-top:0.5rem; color: green; font-size:0.95rem;">
+          You have joined as seat <%= @current_gameplayer.seat_number %>.
+        </div>
+      <% end %>
+    </article>
+  <% else %>
+
+    <% if @the_game.status == 'started' %>
+      <article class="section-card">
+        <h3>Table</h3>
+        <% table = @the_game.table_cards_array %>
+        <div class="table-row">
+          <% if table.empty? %>
+            <div class="card-back">(no cards)</div>
+          <% else %>
+            <% table.each do |c| %>
+              <div class="<%= card_css_class(c) %>"><%= card_display_name(c) %></div>
+            <% end %>
+          <% end %>
+
+          <div class="table-meta">
+            Deck: <strong><%= @the_game.deck_state_array.length %></strong> cards
+          </div>
+        </div>
+      </article>
+    <% end %>
+
+    <% if current_user && @current_gameplayer.present? && (@the_game.status == 'started' || current_user.id == @the_game.creator_id) %>
+      <article class="section-card">
+        <h3>Your hand</h3>
+
+        <% hand = @current_gameplayer.hand_cards_array %>
+
+        <% if hand.empty? %>
+          <p class="helper-text-muted">You have no cards in hand.</p>
+        <% else %>
+          <ul class="hand-list">
+            <% 4.times do |i| %>
+              <% card = hand[i] %>
+              <li class="hand-item">
+                <span class="<%= card_css_class(card) %>"><%= card_display_name(card) %></span>
+                <% if card.present? && current_user.id == @the_game.current_player_id %>
+                  <form action="/insert_move" method="post">
+                    <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
+                    <input type="hidden" name="query_card_played" value="<%= card %>">
+                    <button type="submit" class="btn btn-primary">Play</button>
+                  </form>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+
+          <% if current_user.id != @the_game.current_player_id %>
+            <% other = User.find_by(id: @the_game.current_player_id) %>
+            <div style="margin-top:0.5rem;" class="helper-text-muted">
+              Waiting for <%= other ? other.username : 'player' %>'s turn
+            </div>
+          <% end %>
+        <% end %>
+      </article>
+    <% end %>
+  <% end %>
+
+  <% if @the_game.status == 'started' %>
+    <article class="section-card">
+      <h3>Game info</h3>
+      <dl class="info-grid">
+        <dt>Game code</dt>
+        <dd><%= @the_game.room_code %></dd>
+
+        <dt>Creator</dt>
+        <dd><%= @the_game.creator&.username %></dd>
+
+        <dt>Status</dt>
+        <dd><%= @the_game.status.capitalize %></dd>
+
+        <dt>Players joined</dt>
+        <dd><strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %></dd>
+      </dl>
+    </article>
+  <% end %>
+
+  <article class="section-card" style="text-align:right;">
+    <form action="/delete_game/<%= @the_game.id %>" method="get" style="display:inline;">
+      <button type="submit" class="btn btn-danger">
+        Delete game
+      </button>
+    </form>
   </article>
-<% end %>
-
-<article>
-  <div>
-    <a href="/delete_game/<%= @the_game.id %>">
-      Delete game
-    </a>
-  </div>
-</article>
+</div>
 
 <script>
   (function() {

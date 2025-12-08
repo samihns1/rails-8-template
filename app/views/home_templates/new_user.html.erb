@@ -1,13 +1,55 @@
-<article>
-    <div>
-      <a href="/users/sign_in">
-        Sign in
-      </a>
-    </div>
+<style>
+  .auth-btn {
+    display:inline-block;
+    width:160px;
+    padding:0.6rem 1.2rem;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    text-align:center;
+    color:white;
+    box-shadow:0 3px 10px rgba(0,0,0,0.10);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
 
-    <div>
-      <a href="/users/sign_up">
-        Sign up
-      </a>
-    </div>
-</article>
+  .auth-btn:hover {
+    filter: brightness(85%);
+    transform: translateY(-2px);
+  }
+
+  .signin-btn {
+    background:#2563eb;
+  }
+
+  .signup-btn {
+    background:#6b7280;
+  }
+</style>
+
+<div style="text-align:center; margin-top:2rem;">
+
+  <h1 style="
+    font-size:1.5rem;
+    margin-bottom:1rem;
+    font-weight:700;
+    color:#1f2937;
+  ">
+    Please sign in or create an account to continue.
+  </h1>
+
+  <div style="
+    display:flex;
+    justify-content:center;
+    gap:3rem;
+  ">
+
+    <a href="/users/sign_in" class="auth-btn signin-btn">
+      Sign In
+    </a>
+
+    <a href="/users/sign_up" class="auth-btn signup-btn">
+      Sign Up
+    </a>
+
+  </div>
+</div>

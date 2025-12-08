@@ -33,59 +33,149 @@
     <link rel="stylesheet" href="/css/my_styles.css">
   </head>
 
-  <body class="pico">
-    <header>
-      <div class="container-two-thirds">
-        <nav>
-          <ul>
-            <li>
-              <a href="/">
-                <strong>
-                  Basra
-                </strong>
-              </a>
-            </li>
-            <li>
-              <a href="/rules">
-                  Rules
-              </a>
-            </li>
-            <% if current_user == nil %>
-            <li>
+<body class="pico">
+  <style>
+    .site-header {
+      background:#ffffff;
+      color:#000000;
+      box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .site-header-inner {
+      max-width:960px;
+      margin:0 auto;
+      padding:0.75rem 1.5rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .brand-link {
+      display:flex;
+      align-items:center;
+      gap:0.4rem;
+      text-decoration:none;
+      color:#000000;
+      font-weight:700;
+      font-size:1.15rem;
+    }
+
+    .brand-link:hover {
+      color:#6b7280;
+    }
+
+    .main-nav ul {
+      display:flex;
+      align-items:center;
+      gap:1.25rem;
+      margin:0;
+      padding:0;
+      list-style:none;
+    }
+
+    .main-nav a {
+      text-decoration:none;
+      font-size:0.95rem;
+      color:#000000;
+      transition:color 0.15s ease;
+    }
+
+    .main-nav a:hover {
+      color:#6b7280;
+    }
+
+    .nav-auth a {
+      padding:0.35rem 0.85rem;
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      font-size:0.9rem;
+      color:#000000;
+    }
+
+    .nav-auth a:hover {
+      color:#6b7280;
+      border-color:#9ca3af;
+    }
+
+    main .container-two-thirds {
+      max-width:960px;
+      margin:2rem auto 3rem;
+      padding:0 1.5rem;
+    }
+
+    .flash {
+      padding:0.6rem 0.9rem;
+      border-radius:8px;
+      font-size:0.9rem;
+      margin-bottom:0.5rem;
+    }
+
+    .flash-success {
+      background:#dcfce7;
+      color:#166534;
+      border:1px solid #bbf7d0;
+    }
+
+    .flash-danger {
+      background:#fee2e2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
+    }
+
+    .site-footer {
+      padding:1.25rem 0 1.75rem;
+      font-size:0.85rem;
+      color:#6b7280;
+      text-align:center;
+      border-top:1px solid #e5e7eb;
+      background:#f9fafb;
+    }
+  </style>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="/" class="brand-link">
+        Basra
+      </a>
+
+      <nav class="main-nav">
+        <ul>
+          <li><a href="/rules">Rules</a></li>
+
+          <% if current_user.nil? %>
+            <li class="nav-auth">
               <a href="/users/sign_in">Sign in</a>
             </li>
-            <li>
+            <li class="nav-auth">
               <a href="/users/sign_up">Sign up</a>
             </li>
-            <% else %>
-            <li>
-              <a href="/users/edit">Edit Profile</a>
-            </li>
-            <li>
+          <% else %>
+            <li><a href="/users/edit">Edit profile</a></li>
+            <li class="nav-auth">
               <a href="/users/sign_out">Sign out</a>
             </li>
-            <% end %>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </header>
+          <% end %>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-    <main>
-      <div class="container-two-thirds">
-        <div class="text-success">
-          <%= notice %>
-        </div>
+  <main>
+    <div class="container-two-thirds">
+      <% if notice.present? %>
+        <div class="flash flash-success"><%= notice %></div>
+      <% end %>
 
-        <div class="text-danger">
-          <%= alert %>
-        </div>
-        <%= yield %>
-      </div>
-    </main>
+      <% if alert.present? %>
+        <div class="flash flash-danger"><%= alert %></div>
+      <% end %>
 
-    <footer class="text-center">
-      Samih Sawiris 2025. All rights reserved.
-    </footer>
-  </body>
+      <%= yield %>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    Samih Sawiris 2025. All rights reserved.
+  </footer>
+</body>
 </html>

@@ -1,35 +1,155 @@
-<h1>Join a Game</h1>
+<style>
+  .page-card {
+    max-width: 520px;
+    margin: 1.5rem auto;
+    background: #ffffff;
+    padding: 26px 30px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
 
-<article>
+  h1, h2 {
+    color: #000000;
+    margin-top: 0;
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    text-align: center;
+    margin-bottom: 1.25rem;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.75rem;
+  }
+
+  label {
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+
+  .text-alert {
+    color: #b91c1c;
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+    text-align: center;
+  }
+
+  .join-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: #000;
+    background: #fff;
+  }
+
+  .join-input:focus {
+    outline: none;
+    border-color: #6b7280;
+    box-shadow: 0 0 0 2px #e5e7eb;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    background: #3b82f6;
+    color: white;
+    cursor: pointer;
+    transition: 0.15s ease-in-out;
+  }
+
+  .btn-primary:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+  }
+
+  .spectate-table {
+  margin-top: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.spectate-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-decoration: none;
+  color: #000;
+  background: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.spectate-row:last-child {
+  border-bottom: none;
+}
+
+.spectate-row:hover {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.spectate-arrow {
+  font-size: 1.3rem;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.spectate-row:hover .spectate-arrow {
+  color: #6b7280;
+}
+</style>
+
+
+<div class="page-card">
+  <h1>Join a Game</h1>
+
   <% if alert.present? %>
-    <p style="color: red;"><%= alert %></p>
+    <div class="text-alert"><%= alert %></div>
   <% end %>
 
   <form action="/join_game" method="post">
-    <div>
-      <label for="room_code_box">Enter room code</label>
-      <input type="text" id="room_code_box" name="query_room_code">
-    </div>
+    <label for="room_code_box">Enter room code</label>
+    <input type="text" id="room_code_box" name="query_room_code" class="join-input">
 
-    <button type="submit">Join Game</button>
+    <button type="submit" class="btn-primary">Join Game</button>
   </form>
-</article>
+</div>
 
-<article>
+<div class="spectate-card">
   <h2>Spectate Games</h2>
-  <dd>Enter the room code above to join a game as a player.</dd>
-  <dd>Below are active games you can watch — you may spectate any ongoing game, but you cannot join games that have already started.</dd>
-  <ul>
+
+  <dd>Enter a room code above to join as a player.</dd>
+  <dd>You may spectate any active ongoing game below.</dd>
+
+  <div class="spectate-table">
     <% @list_of_games.each do |a_game| %>
-      <li>
-        <a href="/games/<%= a_game.id %>">
+      <a href="/games/<%= a_game.id %>" class="spectate-row">
+        <div class="spectate-name">
           <% if a_game.name.present? %>
             <%= a_game.name %>
           <% else %>
             Game #<%= a_game.id %>
           <% end %>
-        </a>
-      </li>
+        </div>
+
+        <div class="spectate-arrow">›</div>
+      </a>
     <% end %>
-  </ul>
-</article>
+  </div>
+</div>

@@ -1,20 +1,88 @@
-<h1>Game Over</h1>
+<style>
+  .gameover-card {
+    max-width: 520px;
+    margin: 2rem auto;
+    background: #ffffff;
+    padding: 28px 32px;
+    border-radius: 16px;
+    box-shadow: 0 14px 35px rgba(0,0,0,0.10);
+    text-align: center;
+  }
 
-<article>
+  .gameover-card h1 {
+    margin-top: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #000000;
+  }
+
+  .winner-name {
+    font-size: 1.4rem;
+    margin-bottom: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .scores-title {
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    color: #000000;
+    font-weight: 600;
+  }
+
+  .scores-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 1.25rem;
+  }
+
+  .scores-list li {
+    padding: 0.35rem 0;
+    font-size: 1rem;
+    color: #111827;
+  }
+
+  .back-link {
+    display: inline-block;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.15s ease-in-out;
+  }
+
+  .back-link:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+  }
+</style>
+
+
+<div class="gameover-card">
+
+  <h1>Game Over</h1>
+
   <% if @winner %>
-    <h2>Winner: <%= @winner.username %></h2>
+    <div class="winner-name">Winner: <%= @winner.username %></div>
   <% else %>
-    <h2>Winner</h2>
+    <div class="winner-name">Winner</div>
   <% end %>
 
-  <h3>Final scores</h3>
-  <ul style="list-style:none; padding:0;">
+  <div class="scores-title">Final Scores</div>
+
+  <ul class="scores-list">
     <% @scores.each do |s| %>
-      <li style="padding:0.25rem 0;"><strong>Seat <%= s[:seat] %>:</strong> <%= s[:username] %> — <strong><%= s[:score] %></strong> points</li>
+      <li>
+        <strong>Seat <%= s[:seat] %>:</strong>
+        <%= s[:username] %> —
+        <strong><%= s[:score] %></strong> points
+      </li>
     <% end %>
   </ul>
 
-  <div style="margin-top:1rem;">
-    <a href="/games">Back to games</a>
-  </div>
-</article>
+  <a href="/games" class="back-link">Back to games</a>
+
+</div>

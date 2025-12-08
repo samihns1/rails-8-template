@@ -1,27 +1,69 @@
-<h1>
-  Welcome to Basra
-</h1>
+<style>
+  .home-btn {
+    display:inline-block;
+    padding:0.6rem 1.2rem;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    text-align:center;
+    width:200px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.12);
+    transition: background-color 0.2s ease, transform 0.1s ease, filter 0.2s ease;
+  }
 
-<article>
-  <div>
-    <a href="/games">
+  .home-btn:hover {
+    filter: brightness(85%);
+    transform: translateY(-2px);
+  }
+
+  .btn-blue { background:#3b82f6; color:white; }
+  .btn-green { background:#10b981; color:white; }
+  .btn-grey { background:#e5e7eb; color:#374151; box-shadow:0 3px 10px rgba(0,0,0,0.08); }
+</style>
+
+<div style="text-align:center; margin-top:1rem; margin-bottom:2.5rem;">
+
+  <h1 style="
+    font-size:2.3rem;
+    margin-bottom:0.5rem;
+    font-weight:700;
+    color:#1f2937;
+  ">
+    Welcome to Basra
+  </h1>
+
+  <p style="
+    font-size:1rem;
+    color:#6b7280;
+    margin-bottom:1.5rem;
+  ">
+    Create a game, invite your friends, and start playing.
+  </p>
+
+  <div style="
+    display:flex;
+    justify-content:center;
+    gap:1rem;
+    margin-bottom:1rem;
+  ">
+    <a href="/games" class="home-btn btn-blue">
       Create a Game
     </a>
-  </div>
 
-  <div>
-    <a href="/join">
+    <a href="/join" class="home-btn btn-green">
       Join a Game
     </a>
   </div>
 
   <div>
-    <a href="/rules">
+    <a href="/rules" class="home-btn btn-grey">
       Learn the Rules
     </a>
   </div>
-</article>
 
+</div>
+
+<% if current_user != nil %>
 <article style="margin-top: 2rem; display: flex; justify-content: center;">
   <div style="
     width: 100%;
@@ -74,3 +116,4 @@
     <% end %>
   </div>
 </article>
+<% end %>
