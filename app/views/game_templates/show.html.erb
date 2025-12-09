@@ -224,7 +224,11 @@
     </div>
   </div>
 
-  <div id="game-root" data-game-id="<%= @the_game.id %>" style="display:none"></div>
+  <div id="game-root"
+    data-game-id="<%= @the_game.id %>"
+    data-current-user-id="<%= current_user&.id || '' %>"
+    data-is-creator="<%= (current_user && current_user.id == @the_game.creator_id) ? 'true' : 'false' %>"
+    style="display:none"></div>
 
   <%
     all_hands_empty = @the_game.gameplayers.all? { |gp| gp.hand_cards_array.empty? }
@@ -274,19 +278,22 @@
       <h3>Game status</h3>
       <% if current_user && current_user.id == @the_game.creator_id %>
         <% players_count = @the_game.gameplayers.count %>
-        <div style="margin-top:0.5rem;">
-          <% if players_count >= 2 %>
+        <div id="start-controls" style="margin-top:0.5rem;">
+          <!-- Enabled start form (visible when players_count >= 2) -->
+          <div id="start-enabled" style="display: <%= players_count >= 2 ? 'inline' : 'none' %>;">
             <form action="/start_game/<%= @the_game.id %>" method="post" style="display:inline;">
               <button type="submit" class="btn btn-primary">Start game</button>
             </form>
-          <% else %>
+          </div>
+
+          <div id="start-disabled" style="display: <%= players_count < 2 ? 'inline' : 'none' %>;">
             <form style="display:inline;">
               <button type="button" class="btn btn-primary" disabled>Start game</button>
               <span class="helper-text" style="margin-left:0.5rem;">
                 Need at least 2 players to start (currently <%= players_count %>).
               </span>
             </form>
-          <% end %>
+          </div>
         </div>
       <% else %>
         <p class="helper-text-muted" style="margin-top:0.5rem;">
@@ -409,6 +416,14 @@
         if (!res.ok) return;
         const json = await res.json();
 
+        try {
+          if (typeof updateStartControls === 'function') {
+            updateStartControls((json.players || []).length);
+          }
+        } catch (e) {
+          console.debug('start-controls update failed', e);
+        }
+
         const fingerprint = JSON.stringify({
           table: json.table_cards,
           deck_count: json.deck_count,
@@ -428,5 +443,32 @@
 
     poll();
     setInterval(poll, 2000);
+
+    function updateStartControls(playersCount) {
+      try {
+        const gameRoot = document.getElementById('game-root');
+        if (!gameRoot) return;
+        const isCreator = gameRoot.dataset.isCreator === 'true';
+        if (!isCreator) return;
+
+        const enabled = document.getElementById('start-enabled');
+        const disabled = document.getElementById('start-disabled');
+        if (!enabled || !disabled) return;
+
+        if (playersCount >= 2) {
+          enabled.style.display = 'inline';
+          disabled.style.display = 'none';
+        } else {
+          enabled.style.display = 'none';
+          disabled.style.display = 'inline';
+          const helper = disabled.querySelector('.helper-text');
+          if (helper) {
+            helper.textContent = `Need at least 2 players to start (currently ${playersCount}).`;
+          }
+        }
+      } catch (e) {
+        console.debug('updateStartControls error', e);
+      }
+    }
   })();
 </script>
