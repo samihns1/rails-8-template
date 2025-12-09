@@ -219,7 +219,8 @@
       <span class="status-pill <%= status_class %>">
         <%= @the_game.status.capitalize %>
       </span>
-      <dd>Players joined:  <strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %></dd>
+      <dd>Creator: <strong><%= @the_game.creator&.username %></strong></dd>
+      <dd>Players joined: <strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %></dd>
     </div>
   </div>
 
@@ -386,32 +387,15 @@
     <% end %>
   <% end %>
 
-  <% if @the_game.status == 'started' %>
-    <article class="section-card">
-      <h3>Game info</h3>
-      <dl class="info-grid">
-        <dt>Game code</dt>
-        <dd><%= @the_game.room_code %></dd>
-
-        <dt>Creator</dt>
-        <dd><%= @the_game.creator&.username %></dd>
-
-        <dt>Status</dt>
-        <dd><%= @the_game.status.capitalize %></dd>
-
-        <dt>Players joined</dt>
-        <dd><strong><%= @the_game.gameplayers.count %></strong> / <%= (@the_game.max_players || 2) %></dd>
-      </dl>
+  <% if current_user && current_user.id == @the_game.creator_id %>
+    <article class="section-card" style="text-align:right;">
+      <form action="/delete_game/<%= @the_game.id %>" method="get" style="display:inline;">
+        <button type="submit" class="btn btn-danger">
+          Delete game
+        </button>
+      </form>
     </article>
   <% end %>
-
-  <article class="section-card" style="text-align:right;">
-    <form action="/delete_game/<%= @the_game.id %>" method="get" style="display:inline;">
-      <button type="submit" class="btn btn-danger">
-        Delete game
-      </button>
-    </form>
-  </article>
 </div>
 
 <script>

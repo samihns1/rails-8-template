@@ -74,6 +74,16 @@ class GamesController < ApplicationController
     the_id = params.fetch("path_id")
     the_game = Game.where({ :id => the_id }).at(0)
 
+    if the_game.nil?
+      redirect_to("/games", { alert: "Game not found." })
+      return
+    end
+
+    if current_user.nil? || current_user.id != the_game.creator_id
+      redirect_to("/games/#{the_game.id}", { alert: "Only the game creator can delete this game." })
+      return
+    end
+
     the_game.destroy
 
     redirect_to("/games", { :notice => "Game deleted successfully." })
