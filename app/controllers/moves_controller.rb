@@ -74,9 +74,11 @@ class MovesController < ApplicationController
     move.basra = basra
     move.points_earned = basra ? 10 : 0
 
-    if basra
-      gameplayer.score = (gameplayer.score || 0) + 10
-    end
+    card_count = captured_cards.length
+    card_count += 1 if card_count > 0 && card_code.present?
+    move.cards_collected = card_count
+    
+    move.round_points = 0
 
     if move.valid? && gameplayer.valid? && @game.valid?
       players = @game.gameplayers.order(:seat_number).to_a
@@ -114,28 +116,44 @@ class MovesController < ApplicationController
               Move.transaction do
                 last_take.save!
                 @game.table_cards_array = []
-                  counts = Hash.new(0)
-                  @game.moves.where.not(captured_cards: [nil, "[]"]).each do |m|
-                    begin
-                      arr = JSON.parse(m.captured_cards || "[]")
-                      counts[m.user_id] += arr.length
-                    rescue JSON::ParserError
-                      next
-                    end
+                
+                round_points_per_player = Hash.new(0)
+                card_counts_per_player = Hash.new(0)
+                
+                @game.gameplayers.each do |gp|
+                  round_points_per_player[gp.user_id] = 0
+                  card_counts_per_player[gp.user_id] = 0
+                end
+                
+                @game.moves.where.not(captured_cards: [nil, "[]"]).each do |m|
+                  begin
+                    round_points_per_player[m.user_id] += (m.points_earned || 0)
+                    
+                    arr = JSON.parse(m.captured_cards.to_s)
+                    card_count = arr.length
+                    card_count += 1 if card_count > 0 && m.card_played.present?
+                    card_counts_per_player[m.user_id] += card_count
+                  rescue JSON::ParserError
+                    next
                   end
+                end
 
-                  counts.each do |user_id, cnt|
-                    if cnt >= 27
-                      gp = Gameplayer.find_by(game_id: @game.id, user_id: user_id)
-                      if gp
-                        gp.score = (gp.score || 0) + 30
-                        gp.save!
-                      end
-                    end
+                active_players = @game.gameplayers.count
+                majority_threshold = (52.0 / active_players).ceil + 1
+
+                card_counts_per_player.each do |user_id, card_count|
+                  gp = Gameplayer.find_by(game_id: @game.id, user_id: user_id)
+                  if gp
+                    majority_bonus = card_count >= majority_threshold ? 30 : 0
+                    total_round_points = round_points_per_player[user_id] + majority_bonus
+                    
+                    gp.score = (gp.score || 0) + total_round_points
+                    gp.save!
                   end
+                end
 
-                  @game.status = 'waiting'
-                  @game.save!
+                @game.status = 'waiting'
+                @game.save!
               end
             end
           end

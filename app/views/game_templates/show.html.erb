@@ -279,6 +279,159 @@
         </div>
       <% end %>
     </article>
+
+    <% last_take = @the_game.moves.where(card_played: nil).order(created_at: :desc).first %>
+    <% if last_take.present? %>
+      <% prev_last = @the_game.moves.where(card_played: nil).order(created_at: :desc).second %>
+      <% hand_moves =
+      if prev_last
+        @the_game.moves.where("created_at > ? AND created_at <= ?", prev_last.created_at, last_take.created_at).order(:created_at).to_a
+      else
+        @the_game.moves.where("created_at <= ?", last_take.created_at).order(:created_at).to_a
+      end %>
+
+      <style>
+        .round-breakdown {
+          margin-top: 1rem;
+        }
+
+        .round-breakdown-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .round-breakdown-header h3 {
+          margin: 0;
+          font-size: 1.15rem;
+          font-weight: 600;
+          color: #111827;
+        }
+
+        .round-breakdown-header span {
+          font-size: 0.85rem;
+          color: #6b7280;
+        }
+
+        .round-breakdown-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.95rem;
+        }
+
+        .round-breakdown-table thead th {
+          padding: 0.6rem 0.5rem;
+          border-bottom: 1px solid #e5e7eb;
+          background: #f9fafb;
+          color: #6b7280;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .round-breakdown-table th.center,
+        .round-breakdown-table td.center {
+          text-align: center;
+        }
+
+        .round-breakdown-table th.right,
+        .round-breakdown-table td.right {
+          text-align: right;
+        }
+
+        .round-breakdown-table tbody tr:nth-child(even) {
+          background: #f9fafb;
+        }
+
+        .round-breakdown-table tbody td {
+          padding: 0.55rem 0.5rem;
+          border-bottom: 1px solid #f3f4f6;
+          color: #111827;
+        }
+
+        .round-breakdown-table tbody tr:last-child td {
+          border-bottom: none;
+        }
+
+        .round-points {
+          font-weight: 600;
+        }
+
+        .round-majority-pill {
+          display: inline-flex;
+          align-items: center;
+          margin-left: 0.35rem;
+          padding: 0.08rem 0.45rem;
+          border-radius: 999px;
+          background: #dcfce7;
+          color: #166534;
+          font-size: 0.7rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+      </style>
+
+      <article class="section-card round-breakdown">
+        <div class="round-breakdown-header">
+          <h3>Round breakdown</h3>
+          <span>
+            Last take by
+            <strong><%= User.find_by(id: last_take.user_id)&.username || "N/A" %></strong>
+          </span>
+        </div>
+
+        <table class="round-breakdown-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th class="center">Cards collected</th>
+              <th class="center">Basras</th>
+              <th class="right">Points earned</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% active_players = @the_game.gameplayers.count %>
+            <% majority_threshold = (52.0 / active_players).ceil + 1 %>
+
+            <% @the_game.gameplayers.order(:seat_number).each do |gp| %>
+              <% player_moves = hand_moves.select { |m| m.user_id == gp.user_id } %>
+              <% basra_count = player_moves.count { |m| m.basra } %>
+
+              <% captured_count = player_moves.reduce(0) do |acc, m|
+                   begin
+                     arr = JSON.parse(m.captured_cards.to_s)
+                     card_count = arr.is_a?(Array) ? arr.length : 0
+                     card_count += 1 if card_count > 0 && m.card_played.present?
+                     acc + card_count
+                   rescue JSON::ParserError, TypeError
+                     acc
+                   end
+                 end %>
+
+              <% points_from_moves = player_moves.sum { |m| (m.points_earned || 0).to_i } %>
+              <% majority_bonus = captured_count >= majority_threshold ? 30 : 0 %>
+              <% total_earned = points_from_moves + majority_bonus %>
+
+              <tr>
+                <td>
+                  <%= gp.user&.username || "Player #{gp.seat_number}" %>
+                </td>
+                <td class="center"><%= captured_count %></td>
+                <td class="center"><%= basra_count %></td>
+                <td class="right">
+                  <span class="round-points"><%= total_earned %></span>
+                  <% if majority_bonus > 0 %>
+                    <span class="round-majority-pill">+30 majority</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </article>
+    <% end %>
   <% end %>
 
   <% if @the_game.status == 'started' %>
