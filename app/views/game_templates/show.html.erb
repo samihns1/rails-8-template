@@ -273,13 +273,20 @@
     </article>
   <% end %>
 
-  <% if @the_game.status != 'started' %>
+  <% if @the_game.status != 'started' && @the_game.moves.count == 0 %>
     <article class="section-card">
+
+      <% if current_user && @current_gameplayer.nil? && current_user.id != @the_game.creator_id %>
+      <% elsif @current_gameplayer.present? %>
+        <div style="margin-top:0.5rem; color: green; font-size:0.95rem;">
+          You have joined as seat <%= @current_gameplayer.seat_number %>.
+        </div>
+      <% end %>
+
       <h3>Game status</h3>
       <% if current_user && current_user.id == @the_game.creator_id %>
         <% players_count = @the_game.gameplayers.count %>
         <div id="start-controls" style="margin-top:0.5rem;">
-          <!-- Enabled start form (visible when players_count >= 2) -->
           <div id="start-enabled" style="display: <%= players_count >= 2 ? 'inline' : 'none' %>;">
             <form action="/start_game/<%= @the_game.id %>" method="post" style="display:inline;">
               <button type="submit" class="btn btn-primary">Start game</button>
@@ -304,38 +311,7 @@
   <% end %>
 
   <% if @the_game.status != 'started' && @the_game.moves.count == 0 && current_user.id == @the_game.creator_id %>
-    <article class="section-card">
-      <h3>Invite players</h3>
 
-      <form action="/insert_invitation" method="post" style="margin-bottom:0.75rem;">
-        <input type="hidden" name="query_game_id" value="<%= @the_game.id %>">
-
-        <div style="margin-bottom:0.75rem;">
-          <label for="email_invite_box" style="font-weight:600; display:block; margin-bottom:4px; color:#374151;">
-            Player email
-          </label>
-          <input type="text" id="email_invite_box" name="query_recipient_email" placeholder="friend@example.com" style="
-            width:100%;
-            max-width:360px;
-            padding:0.55rem 0.7rem;
-            border-radius:8px;
-            border:1px solid #d1d5db;
-          ">
-        </div>
-
-        <button type="submit" class="btn btn-secondary">Send invite</button>
-      </form>
-
-      <% if current_user && @current_gameplayer.nil? && current_user.id != @the_game.creator_id %>
-        <form action="/join_game/<%= @the_game.id %>" method="post" style="margin-top:0.5rem;">
-          <button type="submit" class="btn btn-primary">Join this game</button>
-        </form>
-      <% elsif @current_gameplayer.present? %>
-        <div style="margin-top:0.5rem; color: green; font-size:0.95rem;">
-          You have joined as seat <%= @current_gameplayer.seat_number %>.
-        </div>
-      <% end %>
-    </article>
   <% else %>
 
     <% if @the_game.status == 'started' %>
@@ -358,7 +334,7 @@
       </article>
     <% end %>
 
-    <% if current_user && @current_gameplayer.present? && (@the_game.status == 'started' || current_user.id == @the_game.creator_id) %>
+    <% if current_user && @current_gameplayer.present? && @the_game.status == 'started' %>
       <article class="section-card">
         <h3>Your hand</h3>
 
