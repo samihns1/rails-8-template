@@ -186,9 +186,6 @@ class MovesController < ApplicationController
         end
       end
 
-      notice_msg = "Played #{card_code}."
-      notice_msg += " Basra!" if basra
-
       if @game.status == 'finished' && @game.winning_user_id.present?
         begin
           GameChannel.broadcast_to(@game, { event: 'winner', winning_user_id: @game.winning_user_id })
@@ -201,7 +198,7 @@ class MovesController < ApplicationController
         return
       end
 
-      redirect_to("/games/#{@game.id}", { notice: notice_msg })
+      redirect_to("/games/#{@game.id}")
     else
       errors = (move.errors.full_messages +
                 gameplayer.errors.full_messages +

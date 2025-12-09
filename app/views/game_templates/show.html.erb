@@ -449,14 +449,113 @@
   <% end %>
 
   <% if @the_game.status == 'started' %>
-    <article class="section-card">
-      <h3>Current turn</h3>
-      <% current_player = User.find_by(id: @the_game.current_player_id) %>
-      <p class="helper-text">
-        <strong>Player:</strong>
-        <%= current_player ? current_player.username : '—' %>
-      </p>
-    </article>
+
+    <% if @the_game.moves.any? %>
+      <% last_move = @the_game.moves.where.not(card_played: nil).order(created_at: :desc).first %>
+      <% if last_move.present? %>
+        <style>
+          .last-move-alert {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+          }
+          
+          .last-move-alert h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e40af;
+          }
+          
+          .last-move-played {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+          }
+          
+          .last-move-captured {
+            font-size: 0.95rem;
+            color: #374151;
+          }
+          
+          .card-mini {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            margin: 0 0.15rem;
+            border-radius: 4px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            font-weight: 600;
+            font-size: 0.85rem;
+          }
+          
+          .card-mini.red {
+            color: #dc2626;
+          }
+          
+          .card-mini.black {
+            color: #1f2937;
+          }
+          
+          .basra-badge {
+            display: inline-block;
+            margin-left: 0.5rem;
+            padding: 0.15rem 0.5rem;
+            background: #c9ebff;
+            color: #164865;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+        </style>
+        
+        <article class="last-move-alert">
+          <% move_player = User.find_by(id: last_move.user_id) %>
+          <% is_current_user = current_user && current_user.id == last_move.user_id %>
+          
+          <h4>
+            <% if is_current_user %>
+              You played
+            <% else %>
+              <%= move_player&.username || "Player" %> played
+            <% end %>
+          </h4>
+          
+          <div class="last-move-played">
+            <strong>Played:</strong>
+            <% card = last_move.card_played %>
+            <% rank = card[0..-2] %>
+            <% suit = card[-1] %>
+            <% suit_symbol = {"H" => "♥", "D" => "♦", "C" => "♣", "S" => "♠"}[suit] %>
+            <% card_color = (suit == "H" || suit == "D") ? "red" : "black" %>
+            <span class="card-mini <%= card_color %>"><%= rank %><%= suit_symbol %></span>
+            <% if last_move.basra %>
+              <span class="basra-badge">Basra!</span>
+            <% end %>
+          </div>
+          
+          <% captured_cards = JSON.parse(last_move.captured_cards || "[]") rescue [] %>
+          <% if captured_cards.any? %>
+            <div class="last-move-captured">
+              <strong>Captured:</strong>
+              <% captured_cards.each do |captured_card| %>
+                <% c_rank = captured_card[0..-2] %>
+                <% c_suit = captured_card[-1] %>
+                <% c_suit_symbol = {"H" => "♥", "D" => "♦", "C" => "♣", "S" => "♠"}[c_suit] %>
+                <% c_card_color = (c_suit == "H" || c_suit == "D") ? "red" : "black" %>
+                <span class="card-mini <%= c_card_color %>"><%= c_rank %><%= c_suit_symbol %></span>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="last-move-captured">
+              <strong>Captured:</strong> <span style="color: #9ca3af;">No cards captured</span>
+            </div>
+          <% end %>
+        </article>
+      <% end %>
+    <% end %>
   <% end %>
 
   <% if @the_game.status != 'started' && @the_game.moves.count == 0 %>
