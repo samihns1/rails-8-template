@@ -257,12 +257,26 @@
   <% if deck_empty && all_hands_empty %>
     <article class="section-card">
       <h3>Round complete — scores</h3>
+      <% 
+        last_round_stats = {}
+        if @the_game.last_round_stats.present?
+          begin
+            last_round_stats = JSON.parse(@the_game.last_round_stats)
+          rescue JSON::ParserError
+            last_round_stats = {}
+          end
+        end
+      %>
       <ul class="score-list">
         <% @the_game.gameplayers.order(:seat_number).each do |gp| %>
           <li>
             <strong>Player <%= gp.seat_number %>:</strong>
             <%= gp.user&.username %> —
             <strong><%= gp.score || 0 %></strong> points
+            <% round_earned = last_round_stats[gp.user_id.to_s].to_i %>
+            <% if round_earned > 0 %>
+              <span class="round-majority-pill">+<%= round_earned %> points</span>
+            <% end %>
           </li>
         <% end %>
       </ul>
@@ -486,7 +500,8 @@
 
   <% else %>
 
-    <% if @the_game.status == 'started' %>
+
+    <% if @the_game.status == 'started' && !(deck_empty && all_hands_empty) %>
       <article class="section-card">
         <h3>Table</h3>
         <% table = @the_game.table_cards_array %>
@@ -506,7 +521,7 @@
       </article>
     <% end %>
 
-    <% if current_user && @current_gameplayer.present? && @the_game.status == 'started' %>
+    <% if current_user && @current_gameplayer.present? && @the_game.status == 'started' && !(deck_empty && all_hands_empty) %>
       <article class="section-card">
         <h3>Your hand</h3>
 

@@ -117,6 +117,14 @@ class MovesController < ApplicationController
                 last_take.save!
                 @game.table_cards_array = []
                 
+                prev_last_take = @game.moves.where(card_played: nil).order(created_at: :desc).second
+                
+                current_round_moves = if prev_last_take
+                  @game.moves.where("created_at > ? AND created_at <= ?", prev_last_take.created_at, last_take.created_at).where.not(captured_cards: [nil, "[]"])
+                else
+                  @game.moves.where("created_at <= ?", last_take.created_at).where.not(captured_cards: [nil, "[]"])
+                end
+                
                 round_points_per_player = Hash.new(0)
                 card_counts_per_player = Hash.new(0)
                 
@@ -125,7 +133,7 @@ class MovesController < ApplicationController
                   card_counts_per_player[gp.user_id] = 0
                 end
                 
-                @game.moves.where.not(captured_cards: [nil, "[]"]).each do |m|
+                current_round_moves.each do |m|
                   begin
                     round_points_per_player[m.user_id] += (m.points_earned || 0)
                     
@@ -141,18 +149,36 @@ class MovesController < ApplicationController
                 active_players = @game.gameplayers.count
                 majority_threshold = (52.0 / active_players).ceil + 1
 
+                round_totals = {}
                 card_counts_per_player.each do |user_id, card_count|
                   gp = Gameplayer.find_by(game_id: @game.id, user_id: user_id)
                   if gp
                     majority_bonus = card_count >= majority_threshold ? 30 : 0
                     total_round_points = round_points_per_player[user_id] + majority_bonus
+                    round_totals[user_id] = total_round_points
                     
                     gp.score = (gp.score || 0) + total_round_points
                     gp.save!
                   end
                 end
 
-                @game.status = 'waiting'
+                @game.last_round_stats = round_totals.to_json
+                
+                max_score = @game.gameplayers.maximum(:score) || 0
+                if max_score >= 180
+                  tied_user_ids = @game.gameplayers.where(score: max_score).pluck(:user_id)
+                  
+                  if tied_user_ids.length == 1
+                    @game.winning_user_id = tied_user_ids.first
+                    @game.status = 'finished'
+                    @game.ended_at = Time.current
+                  else
+                    @game.status = 'waiting'
+                  end
+                else
+                  @game.status = 'waiting'
+                end
+                
                 @game.save!
               end
             end
@@ -163,37 +189,16 @@ class MovesController < ApplicationController
       notice_msg = "Played #{card_code}."
       notice_msg += " Basra!" if basra
 
-      scores = @game.gameplayers.map { |gp| [gp.user_id, (gp.score || 0)] }.to_h
-      max_score = scores.values.max || 0
-      if max_score >= 180
-        tied_user_ids = scores.select { |_, s| s == max_score }.keys
-
-        if tied_user_ids.length == 1
-          winner_user_id = tied_user_ids.first
-          @game.winning_user_id = winner_user_id
-          @game.status = 'finished'
-          @game.save!
-          begin
-            GameChannel.broadcast_to(@game, { event: 'winner', winning_user_id: winner_user_id })
-          rescue => e
-            Rails.logger.info "GameChannel broadcast failed: #{e.message}"
-          end
-
-          redirect_to("/games/#{@game.id}/winner", { notice: "#{User.find_by(id: winner_user_id)&.username} has reached #{max_score} points!" })
-          return
-        else
-          @game.status = 'waiting'
-          @game.save!
-
-          begin
-            GameChannel.broadcast_to(@game, { event: 'tie', tied_user_ids: tied_user_ids, message: "Tie at #{max_score} — play additional rounds to determine the winner." })
-          rescue => e
-            Rails.logger.info "GameChannel broadcast failed: #{e.message}"
-          end
-
-          redirect_to("/games/#{@game.id}", { notice: "Tie at #{max_score} points between players — play more rounds to decide the winner." })
-          return
+      if @game.status == 'finished' && @game.winning_user_id.present?
+        begin
+          GameChannel.broadcast_to(@game, { event: 'winner', winning_user_id: @game.winning_user_id })
+        rescue => e
+          Rails.logger.info "GameChannel broadcast failed: #{e.message}"
         end
+
+        winner_username = User.find_by(id: @game.winning_user_id)&.username
+        redirect_to("/games/#{@game.id}/winner", { notice: "#{winner_username} has won the game!" })
+        return
       end
 
       redirect_to("/games/#{@game.id}", { notice: notice_msg })
