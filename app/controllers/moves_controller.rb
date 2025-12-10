@@ -192,10 +192,6 @@ class MovesController < ApplicationController
         rescue => e
           Rails.logger.info "GameChannel broadcast failed: #{e.message}"
         end
-
-        winner_username = User.find_by(id: @game.winning_user_id)&.username
-        redirect_to("/games/#{@game.id}/winner", { notice: "#{winner_username} has won the game!" })
-        return
       end
 
       redirect_to("/games/#{@game.id}")

@@ -174,7 +174,7 @@ class GamesController < ApplicationController
       { seat: g.seat_number, username: g.user&.username, score: g.score || 0 }
     end
 
-    render({ template: "game_templates/winner" })
+    # render({ template: "game_templates/winner" })
   end
 
   def join_form
