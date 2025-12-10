@@ -74,7 +74,7 @@ Rails.application.routes.draw do
 
   get("/games/:path_id", { :controller => "games", :action => "show" })
   get("/games/:path_id/state", { :controller => "games", :action => "state" })
-  get("/games/:path_id/winner", { :controller => "games", :action => "winner" })
+  # get("/games/:path_id/winner", { :controller => "games", :action => "winner" })
 
   # UPDATE
 

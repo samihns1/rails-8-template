@@ -1,4 +1,4 @@
-<style>
+<!--<style>
   .gameover-card {
     max-width: 520px;
     margin: 2rem auto;
@@ -111,16 +111,16 @@
 
   <article class="winner-announcement">
     <h2>🏆 Game Over!</h2>
-    <% if @winner %>
-      <p style="margin: 0; font-size: 1.1rem; color: #78350f;">
-        Winner: <span class="winner-name"><%= @winner.username %></span>
+    <%# if @winner %>-->
+<!--      <p style="margin: 0; font-size: 1.1rem; color: #78350f;">
+        Winner: <span class="winner-name"><%#= @winner.username %></span>
       </p>
-    <% else %>
-      <p style="margin: 0; font-size: 1.1rem; color: #78350f;">
+    <%# else %>-->
+<!--      <p style="margin: 0; font-size: 1.1rem; color: #78350f;">
         <span class="winner-name">Game has ended</span>
       </p>
-    <% end %>
-  </article>
+    <%# end %>-->
+<!--  </article>
 
   <div class="scores-title">Final Scores</div>
 
@@ -132,18 +132,19 @@
       </tr>
     </thead>
     <tbody>
-      <% @scores.each do |s| %>
-        <tr>
+      <%# @scores.each do |s| %>-->
+<!--        <tr>
           <td>
-            <span class="score-seat">Seat <%= s[:seat] %>:</span>
-            &nbsp;<%= s[:username] %>
+            <span class="score-seat">Seat <%#= s[:seat] %>:</span>
+            &nbsp;<%#= s[:username] %>
           </td>
-          <td class="score-points"><%= s[:score] %></td>
+          <td class="score-points"><%#= s[:score] %></td>
         </tr>
-      <% end %>
-    </tbody>
+      <%# end %>-->
+<!--    </tbody>
   </table>
 
   <a href="/join" class="back-link">Back to games</a>
 
 </div>
+-->
