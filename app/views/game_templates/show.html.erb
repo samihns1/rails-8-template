@@ -670,13 +670,31 @@
 <script>
   (function() {
     const gameId = <%= @the_game.id %>;
+    const gameRoot = document.getElementById('game-root');
+    const isCreator = gameRoot ? gameRoot.dataset.isCreator === 'true' : false;
     let lastFingerprint = null;
 
     async function poll() {
       try {
         const res = await fetch(`/games/${gameId}/state`);
-        if (!res.ok) return;
+        
+        if (res.status === 404 || !res.ok) {
+          console.log('Game deleted detected (status:', res.status, ')');
+          localStorage.setItem('gameDeletedAlert', 'Game was deleted.');
+          localStorage.setItem('gameDeletedWasCreator', isCreator ? 'true' : 'false');
+          window.location.href = '/';
+          return;
+        }
+        
         const json = await res.json();
+        
+        if (json.error === 'not_found') {
+          console.log('Game deleted detected (not_found error)');
+          localStorage.setItem('gameDeletedAlert', 'Game was deleted.');
+          localStorage.setItem('gameDeletedWasCreator', isCreator ? 'true' : 'false');
+          window.location.href = '/';
+          return;
+        }
 
         try {
           if (typeof updateStartControls === 'function') {
@@ -690,7 +708,8 @@
           table: json.table_cards,
           deck_count: json.deck_count,
           current_player_id: json.current_player_id,
-          hand: json.hand
+          hand: json.hand,
+          status: json.status
         });
 
         if (lastFingerprint !== null && lastFingerprint !== fingerprint) {
@@ -700,6 +719,18 @@
         lastFingerprint = fingerprint;
       } catch (err) {
         console.debug('game poll error', err);
+
+        try {
+          const testRes = await fetch(`/games/${gameId}/state`);
+          if (testRes.status === 404) {
+            console.log('Game deleted detected (retry 404)');
+            localStorage.setItem('gameDeletedAlert', 'Game was deleted.');
+            localStorage.setItem('gameDeletedWasCreator', isCreator ? 'true' : 'false');
+            window.location.href = '/';
+          }
+        } catch (e) {
+          console.debug('retry failed', e);
+        }
       }
     }
 
